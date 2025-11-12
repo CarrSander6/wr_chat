@@ -31,8 +31,8 @@ webrtc:
 
 sms:
   platform: aliyun  # 目前仅支持阿里云短信
-  access-key: *****************
-  secret-key: *****************
+  access-key: "*****************"
+  secret-key: "*****************"
   sign-name: xxx科技 # 短信签名,需在阿里云控制台审核通过
   template-id: SMS_481125065 # 短信模版id,验证码变量必须为: ${code}
 
