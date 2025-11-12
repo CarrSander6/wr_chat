@@ -33,6 +33,11 @@
       <arrow-bar title="我的资产" icon="icon-receipt" @tap="onAssetManagement()" icon-color="#1890ff"></arrow-bar>
     </bar-group>
     <bar-group>
+      <arrow-bar title="社交匹配" icon="icon-heart" @tap="onMatch()" icon-color="#ff6b6b"></arrow-bar>
+      <arrow-bar title="分销中心" icon="icon-money" @tap="onDistribution()" icon-color="#667eea"></arrow-bar>
+      <arrow-bar title="商城" icon="icon-shop" @tap="onMall()" icon-color="#f39c12"></arrow-bar>
+    </bar-group>
+    <bar-group>
       <arrow-bar title="修改密码" icon="icon-modify-pwd" @tap="onModifyPassword()" icon-color="#5daa31"></arrow-bar>
       <arrow-bar title="注销账号" icon="icon-un-register" @tap="onUnregister()" icon-color="#e43d33"></arrow-bar>
     </bar-group>
@@ -112,6 +117,21 @@ export default {
     onComplaintHistory () {
       uni.navigateTo({
         url: "/pages/complaint/complaint-history"
+      })
+    },
+    onMatch () {
+      uni.navigateTo({
+        url: "/pages/match/match"
+      })
+    },
+    onDistribution () {
+      uni.navigateTo({
+        url: "/pages/distribution/distribution-center"
+      })
+    },
+    onMall () {
+      uni.navigateTo({
+        url: "/pages/mall/mall"
       })
     },
     onQuit () {
