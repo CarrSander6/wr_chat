@@ -13,6 +13,7 @@ import com.bx.implatform.service.MallService;
 import com.bx.implatform.session.SessionContext;
 import com.bx.implatform.session.UserSession;
 import com.bx.implatform.util.BeanUtils;
+import com.bx.implatform.util.IOSReceiptVerifyUtil;
 import com.bx.implatform.vo.OrderVO;
 import com.bx.implatform.vo.ProductVO;
 import lombok.RequiredArgsConstructor;
@@ -201,11 +202,23 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             userMapper.updateById(user);
         } else if (order.getPaymentMethod() == 2) {
             // iOS in-app purchase
-            // TODO: Verify iOS receipt with Apple server
-            if (iosReceipt != null) {
-                order.setIosReceipt(iosReceipt);
+            if (iosReceipt == null || iosReceipt.isEmpty()) {
+                throw new GlobalException("iOS支付凭证不能为空");
             }
-            log.info("iOS receipt for order {}: {}", orderId, iosReceipt);
+
+            // Verify iOS receipt
+            IOSReceiptVerifyUtil.VerifyResult verifyResult = 
+                    IOSReceiptVerifyUtil.verifyReceipt(iosReceipt, null, false);
+            
+            if (!verifyResult.isValid()) {
+                log.error("iOS receipt verification failed for order {}: {}", 
+                        orderId, verifyResult.getMessage());
+                throw new GlobalException("iOS支付验证失败: " + verifyResult.getMessage());
+            }
+
+            order.setIosReceipt(iosReceipt);
+            log.info("iOS receipt verified successfully for order {}, transactionId: {}", 
+                    orderId, verifyResult.getTransactionId());
         }
 
         // Update product stock

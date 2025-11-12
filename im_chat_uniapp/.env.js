@@ -1,5 +1,5 @@
 //设置环境(打包前修改此变量,可选值:DEV/PROD)
-const ENV = "PROD";
+const ENV = "DEV";
 const UNI_APP = {}
 // app热更新文件下载地址
 UNI_APP.WGT_URL = "https://chatoss.sheng-ping.com/download/wrim.wgt";
