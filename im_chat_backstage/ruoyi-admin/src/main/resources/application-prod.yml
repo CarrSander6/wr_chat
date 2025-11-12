@@ -1,0 +1,39 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: redis_CtYsHA
+      database: 15
+
+  datasource:
+    dynamic:
+      hikari: # Hikari 连接池全局配置
+        connection-timeout: 30000     # 等待连接池分配链接的最大时长（毫秒），超过这个时长还没有可用的连接则发生 SQLException，默认：30 秒
+        minimum-idle: 2               # 最小空闲连接数
+        maximum-pool-size: 10         # 最大连接数
+        idle-timeout: 600000          # 连接超时的最大时长（毫秒），超时则被释放（retired），默认：10 分钟
+        max-lifetime: 1800000         # 连接的生命时长（毫秒），超时而且没被使用则被释放（retired），默认： 30 分钟
+        connection-test-query: SELECT 1
+      primary: admin
+      datasource:
+        admin:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://localhost:3306/im_platform?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+          username: im_platform
+          password: 7jWWAyscssZcdS5J
+        platform:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://localhost:3306/im_platform?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+          username: im_platform
+          password: 7jWWAyscssZcdS5J
+
+minio:
+  endpoint: http://127.0.0.1:9000 #内网地址
+  domain: https://chatoss.sheng-ping.com  #外网访问地址
+  accessKey: NIo5OudKyLvddskoZyse
+  secretKey: pR4H5OKwnwF8Clk9YqjjkDjith2Y2jU0lwlZE4am
+  bucketName: jdg-chat-server
+  imagePath: image
+  filePath: file
+  videoPath: video
