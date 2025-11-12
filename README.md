@@ -1,93 +1,103 @@
-# Im Chat
+# IM Chat - 即时通讯系统
 
+一个功能完整的即时通讯系统，支持单聊、群聊、音视频通话、红包等核心功能。
 
+## 📖 项目文档
 
-## Getting started
+完整的项目文档已生成，请访问以下链接查看：
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **[📚 文档中心](./docs/README.md)** - 文档索引和快速导航
+- **[📋 项目说明文档](./docs/项目说明文档.md)** - 详细的项目架构和子项目说明
+- **[🔌 API接口文档](./docs/API接口文档.md)** - 完整的后端API接口文档
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 🚀 快速开始
 
-## Add your files
+### 环境要求
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+- JDK 8/17/21（根据具体模块）
+- Maven 3.6+
+- MySQL 8.0+
+- Redis 6.0+
+- Node.js 16+
+
+### 启动服务
+
+```bash
+# 1. 启动数据库
+mysql.server start
+redis-server
+
+# 2. 启动IM服务器
+cd im_chat_server && mvn spring-boot:run
+
+# 3. 启动Web客户端
+cd im_chat_web && npm install && npm run serve
+```
+
+### 访问应用
+
+- Web客户端: http://localhost:8082
+- API文档: http://localhost:8080/doc.html
+- 管理后台: http://localhost:8083
+
+## 📦 项目结构
 
 ```
-cd existing_repo
-git remote add origin http://0d9883126d2a/wurun/im_chat.git
-git branch -M main
-git push -uf origin main
+wr_chat/
+├── docs/                        # 📚 项目文档
+│   ├── README.md                # 文档索引
+│   ├── 项目说明文档.md           # 项目说明
+│   └── API接口文档.md            # API文档
+├── im_chat_server/              # IM聊天核心服务端 (Java 17)
+├── im_chat_backstage/           # 后台管理系统 (Java 21)
+├── im_chat_backstage_ui/        # 管理后台前端 (Vue 3)
+├── im_chat_web/                 # Web聊天客户端 (Vue 2)
+├── im_chat_uniapp/              # 移动端应用 (uni-app)
+├── im-red-package/              # 红包服务 (Java 8)
+├── im-webview-group-rtc/        # 群组音视频 (Vue 2)
+└── im-webview-private-rtc/      # 私聊音视频 (Vue 2)
 ```
 
-## Integrate with your tools
+## ✨ 核心功能
 
-- [ ] [Set up project integrations](http://0d9883126d2a/wurun/im_chat/-/settings/integrations)
+### 即时通讯
+- ✅ 单聊/群聊
+- ✅ 文本/图片/语音/视频消息
+- ✅ 消息撤回
+- ✅ 离线消息
+- ✅ 消息已读回执
 
-## Collaborate with your team
+### 音视频通话
+- ✅ 一对一音视频通话
+- ✅ 多人视频会议
+- ✅ 通话邀请/接受/拒绝
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### 红包功能
+- ✅ 普通红包/拼手气红包
+- ✅ 群红包/私聊红包
+- ✅ 高并发抢红包
 
-## Test and Deploy
+### 后台管理
+- ✅ 用户管理
+- ✅ 群组管理
+- ✅ 消息监控
+- ✅ 敏感词过滤
 
-Use the built-in continuous integration in GitLab.
+## 🛠️ 技术栈
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+**后端：** Spring Boot · MyBatis Plus · Redis · WebSocket · Netty  
+**前端：** Vue 2/3 · Element UI/Plus · uni-app · Electron  
+**数据库：** MySQL · Redis  
+**文件存储：** MinIO
 
-***
+## 📝 开发指南
 
-# Editing this README
+详细的开发指南请查看 [项目说明文档](./docs/项目说明文档.md)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## 📞 联系方式
 
-## Suggestions for a good README
+如有问题，请提交Issue或Pull Request。
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 📄 许可证
 
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+本项目采用 MIT 许可证。
