@@ -100,6 +100,22 @@
 		"path": "pages/complaint/complaint-history"
 	}, {
 		"path": "pages/complaint/complaint-info"
+	}, {
+		"path": "pages/match/match"
+	}, {
+		"path": "pages/match/match-history"
+	}, {
+		"path": "pages/match/match-list"
+	}, {
+		"path": "pages/distribution/distribution-center"
+	}, {
+		"path": "pages/distribution/commission-list"
+	}, {
+		"path": "pages/mall/mall"
+	}, {
+		"path": "pages/mall/product-detail"
+	}, {
+		"path": "pages/mall/order-list"
 	}],
 	"globalStyle": {
 		"navigationBarTitleText": "wr-chat",
