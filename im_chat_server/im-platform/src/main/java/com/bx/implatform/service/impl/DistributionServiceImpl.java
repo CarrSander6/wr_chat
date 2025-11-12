@@ -215,11 +215,12 @@ public class DistributionServiceImpl extends ServiceImpl<DistributionUserMapper,
     public String generateReferralCode(Long userId) {
         String code;
         int attempts = 0;
+        LambdaQueryWrapper<DistributionUser> checkWrapper;
         do {
             // Generate 8-character alphanumeric code
             code = RandomUtil.randomString("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 8);
             
-            LambdaQueryWrapper<DistributionUser> checkWrapper = new LambdaQueryWrapper<>();
+            checkWrapper = new LambdaQueryWrapper<>();
             checkWrapper.eq(DistributionUser::getReferralCode, code);
             
             attempts++;
