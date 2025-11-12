@@ -1,37 +1,135 @@
 -- 数据库优化和示例数据脚本
+-- 注意: 此脚本可以重复执行,会自动检查索引和字段是否存在
+-- 兼容 MySQL 5.7+
 
 -- ==========================================
--- 性能优化索引
+-- 性能优化索引(使用动态SQL兼容MySQL 5.7)
 -- ==========================================
 
 -- 匹配记录表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user_match_record' AND INDEX_NAME = 'idx_user_action_time';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_user_match_record` DROP INDEX `idx_user_action_time`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user_match_record' AND INDEX_NAME = 'idx_target_user';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_user_match_record` DROP INDEX `idx_target_user`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_user_match_record` 
 ADD INDEX `idx_user_action_time` (`user_id`, `action_type`, `created_time`),
 ADD INDEX `idx_target_user` (`target_user_id`, `created_time`);
 
--- 匹配表优化索引  
+-- 匹配表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user_match' AND INDEX_NAME = 'idx_user1_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_user_match` DROP INDEX `idx_user1_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user_match' AND INDEX_NAME = 'idx_user2_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_user_match` DROP INDEX `idx_user2_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_user_match`
 ADD INDEX `idx_user1_status` (`user1_id`, `status`),
 ADD INDEX `idx_user2_status` (`user2_id`, `status`);
 
 -- 分销佣金表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND INDEX_NAME = 'idx_distributor_status_time';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_commission` DROP INDEX `idx_distributor_status_time`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND INDEX_NAME = 'idx_buyer_time';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_commission` DROP INDEX `idx_buyer_time`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND INDEX_NAME = 'idx_order_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_commission` DROP INDEX `idx_order_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_distribution_commission`
 ADD INDEX `idx_distributor_status_time` (`distributor_user_id`, `status`, `created_time`),
 ADD INDEX `idx_buyer_time` (`buyer_user_id`, `created_time`),
 ADD INDEX `idx_order_status` (`order_id`, `status`);
 
 -- 分销用户表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND INDEX_NAME = 'idx_parent_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_user` DROP INDEX `idx_parent_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND INDEX_NAME = 'idx_grand_parent_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_user` DROP INDEX `idx_grand_parent_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND INDEX_NAME = 'idx_status_activated';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_distribution_user` DROP INDEX `idx_status_activated`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_distribution_user`
 ADD INDEX `idx_parent_status` (`parent_user_id`, `status`),
 ADD INDEX `idx_grand_parent_status` (`grand_parent_user_id`, `status`),
 ADD INDEX `idx_status_activated` (`status`, `activated_time`);
 
 -- 商品表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND INDEX_NAME = 'idx_status_sort';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_product` DROP INDEX `idx_status_sort`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND INDEX_NAME = 'idx_distribution';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_product` DROP INDEX `idx_distribution`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_mall_product`
 ADD INDEX `idx_status_sort` (`status`, `sort_order`),
 ADD INDEX `idx_distribution` (`enable_distribution`, `status`);
 
 -- 订单表优化索引
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND INDEX_NAME = 'idx_user_status_time';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_order` DROP INDEX `idx_user_status_time`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND INDEX_NAME = 'idx_product_status';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_order` DROP INDEX `idx_product_status`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND INDEX_NAME = 'idx_referrer';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_order` DROP INDEX `idx_referrer`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = 0;
+SELECT COUNT(*) INTO @idx_exists FROM information_schema.STATISTICS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND INDEX_NAME = 'idx_status_paid';
+SET @sql = IF(@idx_exists > 0, 'ALTER TABLE `im_mall_order` DROP INDEX `idx_status_paid`', 'SELECT ''Index not exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 ALTER TABLE `im_mall_order`
 ADD INDEX `idx_user_status_time` (`user_id`, `status`, `created_time`),
 ADD INDEX `idx_product_status` (`product_id`, `status`),
@@ -42,26 +140,66 @@ ADD INDEX `idx_status_paid` (`status`, `paid_time`);
 -- 为User表添加推荐相关字段(如果不存在)
 -- ==========================================
 
--- 添加兴趣标签字段
-ALTER TABLE `im_user` 
-ADD COLUMN `interests` VARCHAR(500) COMMENT '兴趣标签,逗号分隔' AFTER `signature`;
+-- 检查并添加兴趣标签字段
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'interests';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_user` ADD COLUMN `interests` VARCHAR(500) COMMENT ''兴趣标签,逗号分隔'' AFTER `signature`', 
+    'SELECT ''Column interests already exists'' AS Info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 添加年龄字段(如果不存在)
-ALTER TABLE `im_user` 
-ADD COLUMN `age` INT(3) COMMENT '年龄' AFTER `birthday`;
+-- 检查并添加年龄字段
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'age';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_user` ADD COLUMN `age` INT(3) COMMENT ''年龄'' AFTER `birthday`', 
+    'SELECT ''Column age already exists'' AS Info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 添加城市字段(如果不存在)
-ALTER TABLE `im_user` 
-ADD COLUMN `city` VARCHAR(100) COMMENT '所在城市' AFTER `age`;
+-- 检查并添加城市字段
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'city';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_user` ADD COLUMN `city` VARCHAR(100) COMMENT ''所在城市'' AFTER `age`', 
+    'SELECT ''Column city already exists'' AS Info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 添加经纬度字段(用于地理位置匹配)
-ALTER TABLE `im_user`
-ADD COLUMN `longitude` DECIMAL(10, 6) COMMENT '经度' AFTER `city`,
-ADD COLUMN `latitude` DECIMAL(10, 6) COMMENT '纬度' AFTER `longitude`;
+-- 检查并添加经度字段
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'longitude';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_user` ADD COLUMN `longitude` DECIMAL(10, 6) COMMENT ''经度'' AFTER `city`', 
+    'SELECT ''Column longitude already exists'' AS Info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 添加空间索引(用于地理位置查询)
-ALTER TABLE `im_user` 
-ADD SPATIAL INDEX `idx_location` (`longitude`, `latitude`);
+-- 检查并添加纬度字段
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'latitude';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_user` ADD COLUMN `latitude` DECIMAL(10, 6) COMMENT ''纬度'' AFTER `longitude`', 
+    'SELECT ''Column latitude already exists'' AS Info');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 注意: 空间索引需要字段为NOT NULL,这里跳过创建
+-- 如果需要使用地理位置功能,请手动执行以下语句:
+-- ALTER TABLE `im_user` MODIFY `longitude` DECIMAL(10, 6) NOT NULL;
+-- ALTER TABLE `im_user` MODIFY `latitude` DECIMAL(10, 6) NOT NULL;
+-- ALTER TABLE `im_user` ADD SPATIAL INDEX `idx_location` (POINT(`longitude`, `latitude`));
 
 -- ==========================================
 -- 插入更多示例商品数据
@@ -96,11 +234,13 @@ VALUES
 -- (103, 'JKL22222', 101, 1, NOW());
 
 -- ==========================================
--- 创建统计视图(可选)
+-- 创建统计视图
+-- 注意: CREATE OR REPLACE VIEW 会自动替换已存在的视图
 -- ==========================================
 
 -- 分销商佣金汇总视图
-CREATE OR REPLACE VIEW `v_distributor_commission_summary` AS
+DROP VIEW IF EXISTS `v_distributor_commission_summary`;
+CREATE VIEW `v_distributor_commission_summary` AS
 SELECT 
     du.user_id,
     du.referral_code,
@@ -117,7 +257,8 @@ WHERE du.status = 1
 GROUP BY du.user_id, du.referral_code, du.status;
 
 -- 商品销售统计视图
-CREATE OR REPLACE VIEW `v_product_sales_summary` AS
+DROP VIEW IF EXISTS `v_product_sales_summary`;
+CREATE VIEW `v_product_sales_summary` AS
 SELECT 
     p.id,
     p.product_name,
@@ -132,7 +273,8 @@ LEFT JOIN im_mall_order o ON p.id = o.product_id AND o.status IN (1, 3)
 GROUP BY p.id, p.product_name, p.price, p.stock, p.sales_count;
 
 -- 用户匹配统计视图
-CREATE OR REPLACE VIEW `v_user_match_summary` AS
+DROP VIEW IF EXISTS `v_user_match_summary`;
+CREATE VIEW `v_user_match_summary` AS
 SELECT 
     u.id as user_id,
     u.nick_name,
@@ -150,6 +292,9 @@ GROUP BY u.id, u.nick_name;
 -- ==========================================
 
 DELIMITER $$
+
+-- 删除已存在的存储过程
+DROP PROCEDURE IF EXISTS `sp_clean_expired_orders`$$
 
 -- 清理过期的未支付订单(超过24小时)
 CREATE PROCEDURE `sp_clean_expired_orders`()
