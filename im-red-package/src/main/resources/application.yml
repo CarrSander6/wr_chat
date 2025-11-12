@@ -10,9 +10,9 @@ spring:
     password: ceIRWJaqbEfPPY5E
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.191.80:3306/wr-chat
-    username: wr-chat
-    password: r6PJhh8ZxA7rbNrM
+    url: jdbc:mysql://192.168.191.80:3306/wr-chat-shejiao
+    username: wr-chat-shejiao
+    password: t5hmWrBKj6Z7S6JJ
 mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

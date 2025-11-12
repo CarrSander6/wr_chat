@@ -18,14 +18,14 @@ spring:
       datasource:
         admin:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.191.80:3306/wr-chat?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
-          username: wr-chat
-          password: r6PJhh8ZxA7rbNrM
+          url: jdbc:mysql://192.168.191.80:3306/wr-chat-shejiao?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+          username: wr-chat-shejiao
+          password: t5hmWrBKj6Z7S6JJ
         platform:
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://192.168.191.80:3306/wr-chat?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
-          username: wr-chat
-          password: r6PJhh8ZxA7rbNrM
+          url: jdbc:mysql://192.168.191.80:3306/wr-chat-shejiao?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+          username: wr-chat-shejiao
+          password: t5hmWrBKj6Z7S6JJ
 
 minio:
   endpoint: http://192.168.191.80:19000 #内网地址

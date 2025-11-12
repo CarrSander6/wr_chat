@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.191.80:3306/wr-chat?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
-    username: wr-chat
-    password: r6PJhh8ZxA7rbNrM
+    url: jdbc:mysql://192.168.191.80:3306/wr-chat-shejiao?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    username: wr-chat-shejiao
+    password: t5hmWrBKj6Z7S6JJ
   data:
     redis:
       host: 192.168.191.80
