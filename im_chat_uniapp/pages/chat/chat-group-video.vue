@@ -1,0 +1,130 @@
+<template>
+	<view class="chat-group-video">
+		<web-view id="chat-video-wv" fullscreen="false" @message="onMessage" :src="webviewUrl"></web-view>
+	</view>
+
+</template>
+
+<script>
+import UNI_APP from '@/.env.js'
+export default {
+	data() {
+		return {
+			webviewUrl: "",
+			wv: '',
+			isHost: false,
+			groupId: null,
+			inviterId: null,
+			userInfos: []
+		}
+	},
+	methods: {
+		onMessage(e) {
+			this.onWebviewMessage(e.detail.data[0]);
+		},
+		onInsertMessage(msgInfo) {
+
+		},
+		onWebviewMessage(event) {
+			console.log("来自webview的消息:" + JSON.stringify(event))
+			switch (event.key) {
+				case "WV_READY":
+					this.initWebView();
+					break;
+				case "WV_CLOSE":
+					uni.navigateBack();
+					break;
+				case "INSERT_MESSAGE":
+					this.onInsertMessage(event.data);
+					break;
+			}
+		},
+		sendMessageToWebView(key, message) {
+			// 如果webview还没初始化好，则延迟100ms再推送
+			if (!this.wv) {
+				setTimeout(() => this.sendMessageToWebView(key, message), 100)
+				return;
+			}
+			let event = {
+				key: key,
+				data: message
+			}
+			// #ifdef APP-PLUS
+			this.wv.evalJS(`onEvent('${encodeURIComponent(JSON.stringify(event))}')`)
+			// #endif
+			// #ifdef H5
+			this.wv.postMessage(event, '*');
+			// #endif
+		},
+		initWebView() {
+			// #ifdef APP-PLUS
+			// APP的webview
+			this.wv = this.$scope.$getAppWebview().children()[0]
+			uni.getSystemInfo({
+				success: sysinfo => {
+					// 动态状态栏高度
+					let statusbar = sysinfo.statusBarHeight;
+					let height = sysinfo.windowHeight;
+					//设置web-view距离顶部的距离以及自己的高度，单位为px
+					this.wv.setStyle({
+						top: statusbar,
+						height: height - statusbar
+					})
+				}
+			});
+			// #endif
+			// #ifdef H5
+			// H5的webview就是iframe
+			this.wv = document.getElementById('chat-video-wv').contentWindow
+			// #endif
+		},
+		initUrl() {
+			this.webviewUrl = "/hybrid/html/rtc-group/index.html?";
+			this.webviewUrl += "baseUrl=" + UNI_APP.BASE_URL;
+			this.webviewUrl += "&groupId=" + this.groupId;
+			this.webviewUrl += "&userId=" + this.userStore.userInfo.id;
+			this.webviewUrl += "&inviterId=" + this.inviterId;
+			this.webviewUrl += "&isHost=" + this.isHost;
+			this.webviewUrl += "&loginInfo=" + this.encodeURI(uni.getStorageSync("loginInfo"));
+			this.webviewUrl += "&userInfos=" + this.encodeURI(this.userInfos);
+			this.webviewUrl += "&config=" + this.encodeURI(this.configStore.webrtc);
+		},
+		encodeURI(obj){
+			return encodeURIComponent(JSON.stringify(obj))
+		}
+	},
+	onBackPress() {
+		console.log("onBackPress")
+		this.sendMessageToWebView("NAV_BACK", {})
+	},
+	onLoad(options) {
+		uni.$on('WS_RTC_GROUP', msg => {
+			// 推送给web-view处理
+			this.sendMessageToWebView("RTC_MESSAGE", msg);
+		})
+		// #ifdef H5
+		window.onmessage = (e) => {
+			this.onWebviewMessage(e.data.data.arg);
+		}
+		// #endif
+		// 是否发起人
+		this.isHost = JSON.parse(options.isHost);
+		// 发起者的用户
+		this.inviterId = options.inviterId;
+		// 解析页面跳转时带过来的好友信息
+		this.groupId = options.groupId;
+		// 邀请的用户信息
+		this.userInfos = JSON.parse(decodeURIComponent(options.userInfos));
+
+		// 构建url
+		this.initUrl();
+	},
+	onUnload() {
+		uni.$off('WS_RTC_GROUP')
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.chat-group-video {}
+</style>
