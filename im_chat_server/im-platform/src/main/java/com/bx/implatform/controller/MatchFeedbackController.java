@@ -2,6 +2,7 @@ package com.bx.implatform.controller;
 
 import com.bx.implatform.entity.MatchFeedback;
 import com.bx.implatform.result.Result;
+import com.bx.implatform.annotation.RateLimit;
 import com.bx.implatform.result.ResultUtils;
 import com.bx.implatform.service.MatchFeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,7 @@ public class MatchFeedbackController {
     private final MatchFeedbackService feedbackService;
 
     @PostMapping("/submit")
+    @RateLimit(key = "match:feedback", limit = 10, windowSeconds = 60)
     @Operation(summary = "提交匹配反馈", description = "提交对匹配对象的评分与评价")
     public Result<Void> submit(@NotNull @RequestParam("targetUserId") Long targetUserId,
                                @Min(1) @Max(5) @RequestParam("score") Integer score,

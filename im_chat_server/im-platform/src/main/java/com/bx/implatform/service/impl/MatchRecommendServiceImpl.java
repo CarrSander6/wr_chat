@@ -6,6 +6,7 @@ import com.bx.implatform.entity.UserMatchRecord;
 import com.bx.implatform.mapper.UserMapper;
 import com.bx.implatform.mapper.UserMatchRecordMapper;
 import com.bx.implatform.service.MatchRecommendService;
+import com.bx.implatform.service.UserBlacklistService;
 import com.bx.implatform.session.SessionContext;
 import com.bx.implatform.session.UserSession;
 import com.bx.implatform.util.BeanUtils;
@@ -33,6 +34,7 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
 
     private final UserMapper userMapper;
     private final UserMatchRecordMapper matchRecordMapper;
+    private final UserBlacklistService blacklistService;
 
     @Override
     public List<UserVO> getSmartRecommendations(Integer limit) {
@@ -76,6 +78,7 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
 
         // 按分数降序排序并取top N
         List<User> recommendedUsers = candidates.stream()
+                .filter(u -> !blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId))
                 .sorted((u1, u2) -> scoreMap.get(u2.getId()).compareTo(scoreMap.get(u1.getId())))
                 .limit(limit)
                 .collect(Collectors.toList());
@@ -119,6 +122,7 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
         List<User> users = userMapper.selectList(userWrapper);
         
         return users.stream()
+                .filter(u -> !blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId))
                 .map(user -> BeanUtils.copyProperties(user, UserVO.class))
                 .collect(Collectors.toList());
     }
@@ -171,6 +175,7 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
         }
 
         List<User> recommendedUsers = candidates.stream()
+                .filter(u -> !blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId))
                 .sorted((u1, u2) -> scoreMap.get(u2.getId()).compareTo(scoreMap.get(u1.getId())))
                 .limit(limit)
                 .collect(Collectors.toList());

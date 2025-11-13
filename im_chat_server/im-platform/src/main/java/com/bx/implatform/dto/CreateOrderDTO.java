@@ -1,6 +1,7 @@
 package com.bx.implatform.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 /**
@@ -21,6 +22,7 @@ public class CreateOrderDTO {
      * 购买数量
      */
     @NotNull(message = "购买数量不能为空")
+    @Min(value = 1, message = "购买数量需大于0")
     private Integer quantity;
 
     /**

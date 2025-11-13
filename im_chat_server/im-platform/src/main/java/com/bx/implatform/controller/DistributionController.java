@@ -2,6 +2,7 @@ package com.bx.implatform.controller;
 
 import com.bx.implatform.dto.ActivateDistributorDTO;
 import com.bx.implatform.dto.CommissionWithdrawDTO;
+import com.bx.implatform.annotation.RateLimit;
 import com.bx.implatform.entity.DistributionCommission;
 import com.bx.implatform.result.Result;
 import com.bx.implatform.result.ResultUtils;
@@ -50,6 +51,7 @@ public class DistributionController {
     }
 
     @PostMapping("/commission/withdraw")
+    @RateLimit(key = "distribution:withdraw", limit = 5, windowSeconds = 60)
     @Operation(summary = "佣金提现", description = "将佣金提现到余额")
     public Result<Void> withdrawCommission(@Valid @RequestBody CommissionWithdrawDTO dto) {
         distributionService.withdrawCommission(dto);
