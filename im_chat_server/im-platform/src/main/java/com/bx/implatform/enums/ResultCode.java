@@ -39,7 +39,57 @@ public enum ResultCode {
     /**
      * 请不要输入非法内容
      */
-    XSS_PARAM_ERROR(10004, "请不要输入非法内容");
+    XSS_PARAM_ERROR(10004, "请不要输入非法内容"),
+    
+    // 业务错误码 (10xxx)
+    /**
+     * 用户不存在
+     */
+    USER_NOT_FOUND(10005, "用户不存在"),
+    /**
+     * 参数校验失败
+     */
+    PARAM_VALIDATION_ERROR(10006, "参数校验失败"),
+    /**
+     * 操作频繁，请稍后再试
+     */
+    RATE_LIMIT_ERROR(10007, "操作频繁，请稍后再试"),
+    
+    // 权限错误码 (20xxx)
+    /**
+     * 无权限访问
+     */
+    ACCESS_DENIED(20001, "无权限访问"),
+    /**
+     * 资源不存在
+     */
+    RESOURCE_NOT_FOUND(20002, "资源不存在"),
+    
+    // 数据错误码 (30xxx)
+    /**
+     * 数据不存在
+     */
+    DATA_NOT_FOUND(30001, "数据不存在"),
+    /**
+     * 数据已存在
+     */
+    DATA_ALREADY_EXISTS(30002, "数据已存在"),
+    /**
+     * 数据保存失败
+     */
+    DATA_SAVE_ERROR(30003, "数据保存失败"),
+    
+    // 缓存错误码 (40xxx)
+    /**
+     * 缓存异常
+     */
+    CACHE_ERROR(40001, "缓存异常"),
+    
+    // 异步处理错误码 (50xxx)
+    /**
+     * 异步任务执行失败
+     */
+    ASYNC_TASK_ERROR(50001, "异步任务执行失败");
 
 
     private final int code;
