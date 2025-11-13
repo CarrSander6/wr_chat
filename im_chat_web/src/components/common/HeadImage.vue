@@ -99,11 +99,22 @@ export default {
 <style scoped lang="scss">
 .head-image {
 	position: relative;
+	transition: transform 0.2s ease;
+
+	&:hover {
+		transform: scale(1.05);
+	}
 
 	.avatar-image {
 		position: relative;
 		overflow: hidden;
 		display: block;
+		transition: all 0.2s ease;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+		&:hover {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		}
 	}
 
 	.avatar-text {
@@ -111,6 +122,13 @@ export default {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		font-weight: 500;
+		transition: all 0.2s ease;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+		&:hover {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		}
 	}
 
 	.online {
@@ -122,6 +140,16 @@ export default {
 		background: limegreen;
 		border-radius: 50%;
 		border: 2px solid white;
+		animation: pulse 2s infinite;
+	}
+}
+
+@keyframes pulse {
+	0%, 100% {
+		box-shadow: 0 0 0 0 rgba(50, 205, 50, 0.7);
+	}
+	50% {
+		box-shadow: 0 0 0 4px rgba(50, 205, 50, 0);
 	}
 }
 </style>

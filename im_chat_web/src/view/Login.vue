@@ -196,10 +196,24 @@ export default {
 				letter-spacing: 2px;
 				text-transform: uppercase;
 				text-align: center;
+				color: #409EFF;
 			}
 
 			.submit-btn {
 				width: 100%;
+				margin-top: 10px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border: none;
+				transition: all 0.3s ease;
+
+				&:hover {
+					transform: translateY(-2px);
+					box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+				}
+
+				&:active {
+					transform: translateY(0);
+				}
 			}
 
 			.register {
@@ -209,6 +223,30 @@ export default {
 				text-align: left;
 				margin-top: 20px;
 				padding-left: 20px;
+
+				a {
+					color: #409EFF;
+					text-decoration: none;
+					transition: color 0.3s;
+
+					&:hover {
+						color: #66b1ff;
+						text-decoration: underline;
+					}
+				}
+			}
+
+			::v-deep .el-input__inner {
+				transition: all 0.3s ease;
+
+				&:focus {
+					border-color: #667eea;
+					box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+				}
+			}
+
+			::v-deep .el-checkbox__label {
+				color: #606266;
 			}
 		}
 	}
