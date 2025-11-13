@@ -44,6 +44,7 @@ public class MatchServiceImpl extends ServiceImpl<UserMatchRecordMapper, UserMat
     private final UserMatchMapper userMatchMapper;
     private final UserMapper userMapper;
     private final MatchRecommendService recommendService;
+    private final com.bx.implatform.service.UserBlacklistService blacklistService;
     private final IMClient imClient;
 
     @Override
@@ -61,6 +62,24 @@ public class MatchServiceImpl extends ServiceImpl<UserMatchRecordMapper, UserMat
         Long userId = session.getUserId();
         Long targetUserId = dto.getTargetUserId();
         Integer actionType = dto.getActionType();
+
+        if (targetUserId == null || targetUserId <= 0) {
+            throw new com.bx.implatform.exception.GlobalException("目标用户无效");
+        }
+        if (userId.equals(targetUserId)) {
+            throw new com.bx.implatform.exception.GlobalException("不能对自己操作");
+        }
+        if (actionType == null || (actionType != 1 && actionType != 2)) {
+            throw new com.bx.implatform.exception.GlobalException("操作类型不合法");
+        }
+        if (Boolean.TRUE.equals(blacklistService.isInBlacklist(userId, targetUserId))
+                || Boolean.TRUE.equals(blacklistService.isInBlacklist(targetUserId, userId))) {
+            throw new com.bx.implatform.exception.GlobalException("与对方存在拉黑关系，无法操作");
+        }
+        com.bx.implatform.entity.User targetUser = userMapper.selectById(targetUserId);
+        if (targetUser == null || targetUser.getIsBanned() || (targetUser.getStatus() != null && targetUser.getStatus() != 0)) {
+            throw new com.bx.implatform.exception.GlobalException("目标用户不可匹配");
+        }
 
         // Check if already recorded
         LambdaQueryWrapper<UserMatchRecord> checkWrapper = new LambdaQueryWrapper<>();

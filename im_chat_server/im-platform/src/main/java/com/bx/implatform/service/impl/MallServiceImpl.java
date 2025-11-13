@@ -320,6 +320,7 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         order.setCompletedTime(new Date());
         order.setUpdatedTime(new Date());
         orderMapper.updateById(order);
+        settleCommissionsForOrder(orderId);
         log.info("Order {} confirmed and completed", orderId);
     }
 
@@ -366,7 +367,7 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             return;
         }
 
-        BigDecimal commissionAmount = order.getTotalAmount().multiply(commissionRate);
+        BigDecimal commissionAmount = order.getTotalAmount().multiply(commissionRate).setScale(2, java.math.RoundingMode.HALF_UP);
 
         // Create commission record
         DistributionCommission commission = new DistributionCommission();
@@ -377,24 +378,36 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         commission.setOrderAmount(order.getTotalAmount());
         commission.setCommissionAmount(commissionAmount);
         commission.setCommissionRate(commissionRate);
-        commission.setStatus(1); // Settled
+        commission.setStatus(0);
         commission.setCreatedTime(new Date());
-        commission.setSettledTime(new Date());
         commissionMapper.insert(commission);
+        log.info("Commission pending {} recorded for distributor {} on order {}", 
+                commissionAmount, distributorUserId, order.getId());
+    }
 
-        // Update distributor balance
-        LambdaQueryWrapper<DistributionUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(DistributionUser::getUserId, distributorUserId);
-        DistributionUser distributor = distributionUserMapper.selectOne(queryWrapper);
+    private void settleCommissionsForOrder(Long orderId) {
+        LambdaQueryWrapper<DistributionCommission> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DistributionCommission::getOrderId, orderId)
+                .eq(DistributionCommission::getStatus, 0);
+        List<DistributionCommission> commissions = commissionMapper.selectList(wrapper);
 
-        if (distributor != null) {
-            distributor.setTotalCommission(distributor.getTotalCommission().add(commissionAmount));
-            distributor.setAvailableCommission(distributor.getAvailableCommission().add(commissionAmount));
-            distributor.setUpdatedTime(new Date());
-            distributionUserMapper.updateById(distributor);
+        Date now = new Date();
+        for (DistributionCommission c : commissions) {
+            c.setStatus(1);
+            c.setSettledTime(now);
+            commissionMapper.updateById(c);
 
-            log.info("Commission {} processed for distributor {} on order {}", 
-                    commissionAmount, distributorUserId, order.getId());
+            LambdaQueryWrapper<DistributionUser> duWrapper = new LambdaQueryWrapper<>();
+            duWrapper.eq(DistributionUser::getUserId, c.getDistributorUserId());
+            DistributionUser distributor = distributionUserMapper.selectOne(duWrapper);
+            if (distributor != null) {
+                distributor.setTotalCommission(distributor.getTotalCommission().add(c.getCommissionAmount()));
+                distributor.setAvailableCommission(distributor.getAvailableCommission().add(c.getCommissionAmount()));
+                distributor.setUpdatedTime(now);
+                distributionUserMapper.updateById(distributor);
+            }
+            log.info("Commission {} settled for distributor {} on order {}", 
+                    c.getCommissionAmount(), c.getDistributorUserId(), orderId);
         }
     }
 }
