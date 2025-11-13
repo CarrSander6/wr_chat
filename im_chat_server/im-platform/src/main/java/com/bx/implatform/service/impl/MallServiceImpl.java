@@ -40,6 +40,7 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
     private final DistributionUserMapper distributionUserMapper;
     private final DistributionCommissionMapper commissionMapper;
     private final DistributionService distributionService;
+    private final MallSkuMapper skuMapper;
 
     @Override
     public List<ProductVO> getProductList(Integer pageNum, Integer pageSize) {
@@ -93,22 +94,38 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             throw new GlobalException("商品已下架");
         }
 
-        if (product.getStock() < dto.getQuantity()) {
-            throw new GlobalException("库存不足");
+        MallSku sku = null;
+        if (dto.getSkuId() != null) {
+            sku = skuMapper.selectById(dto.getSkuId());
+            if (sku == null || !sku.getProductId().equals(product.getId()) || sku.getStatus() != 1) {
+                throw new GlobalException("SKU不存在或不可用");
+            }
+            if (sku.getStock() < dto.getQuantity()) {
+                throw new GlobalException("库存不足");
+            }
+        } else {
+            if (product.getStock() < dto.getQuantity()) {
+                throw new GlobalException("库存不足");
+            }
         }
 
         // Calculate total amount
-        BigDecimal totalAmount = product.getPrice().multiply(new BigDecimal(dto.getQuantity()));
+        BigDecimal unitPrice = (sku != null && sku.getPrice() != null) ? sku.getPrice() : product.getPrice();
+        BigDecimal totalAmount = unitPrice.multiply(new BigDecimal(dto.getQuantity()));
 
         // Create order
         MallOrder order = new MallOrder();
         order.setOrderNo(IdUtil.getSnowflakeNextIdStr());
         order.setUserId(userId);
         order.setProductId(product.getId());
+        order.setSkuId(dto.getSkuId());
         order.setProductName(product.getProductName());
         order.setQuantity(dto.getQuantity());
-        order.setUnitPrice(product.getPrice());
+        order.setUnitPrice(unitPrice);
         order.setTotalAmount(totalAmount);
+        if (sku != null) {
+            order.setProductName(product.getProductName() + "(" + sku.getAttributes() + ")");
+        }
         order.setPaymentMethod(dto.getPaymentMethod());
         order.setIosReceipt(dto.getIosReceipt());
         order.setStatus(0); // Pending payment
@@ -221,9 +238,22 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
                     orderId, verifyResult.getTransactionId());
         }
 
-        // Update product stock
+        // Update stock (SKU first if exists)
         MallProduct product = productMapper.selectById(order.getProductId());
-        if (product != null) {
+        if (order.getSkuId() != null) {
+            MallSku skuPay = skuMapper.selectById(order.getSkuId());
+            if (skuPay != null) {
+                skuPay.setStock(skuPay.getStock() - order.getQuantity());
+                skuPay.setUpdatedTime(new Date());
+                skuMapper.updateById(skuPay);
+            }
+            if (product != null) {
+                product.setStock(Math.max(0, product.getStock() - order.getQuantity()));
+                product.setSalesCount(product.getSalesCount() + order.getQuantity());
+                product.setUpdatedTime(new Date());
+                productMapper.updateById(product);
+            }
+        } else if (product != null) {
             product.setStock(product.getStock() - order.getQuantity());
             product.setSalesCount(product.getSalesCount() + order.getQuantity());
             product.setUpdatedTime(new Date());
@@ -268,6 +298,29 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         orderMapper.updateById(order);
 
         log.info("Order {} cancelled", orderId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmOrder(Long orderId) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        MallOrder order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new GlobalException("订单不存在");
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new GlobalException("无权操作该订单");
+        }
+        if (order.getStatus() != 1) {
+            throw new GlobalException("订单状态异常，无法完成");
+        }
+        order.setStatus(3); // Completed
+        order.setCompletedTime(new Date());
+        order.setUpdatedTime(new Date());
+        orderMapper.updateById(order);
+        log.info("Order {} confirmed and completed", orderId);
     }
 
     /**

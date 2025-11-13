@@ -198,6 +198,82 @@ DEALLOCATE PREPARE stmt;
 -- 注意: 空间索引需要字段为NOT NULL,这里跳过创建
 -- 如果需要使用地理位置功能,请手动执行以下语句:
 -- ALTER TABLE `im_user` MODIFY `longitude` DECIMAL(10, 6) NOT NULL;
+
+-- ==========================================
+-- 新增商城相关表 (如果不存在)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS `im_mall_category` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `parent_id` BIGINT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `status` TINYINT NOT NULL DEFAULT 1,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `created_time` DATETIME NULL,
+  `updated_time` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_parent_status` (`parent_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `im_mall_sku` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `product_id` BIGINT NOT NULL,
+  `sku_code` VARCHAR(64) NOT NULL,
+  `attributes` VARCHAR(512) NULL,
+  `price` DECIMAL(18, 6) NOT NULL,
+  `stock` INT NOT NULL DEFAULT 0,
+  `status` TINYINT NOT NULL DEFAULT 1,
+  `created_time` DATETIME NULL,
+  `updated_time` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_product_sku_code` (`product_id`, `sku_code`),
+  INDEX `idx_product_status` (`product_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `im_mall_aftersale` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_id` BIGINT NOT NULL,
+  `user_id` BIGINT NOT NULL,
+  `reason` VARCHAR(512) NULL,
+  `status` TINYINT NOT NULL DEFAULT 0,
+  `created_time` DATETIME NULL,
+  `updated_time` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_user_status_time` (`user_id`, `status`, `created_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- MallOrder表新增字段(如果不存在)
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'sku_id';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_mall_order` ADD COLUMN `sku_id` BIGINT AFTER `product_id`', 
+    'SELECT ''Column sku_id already exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'shipping_carrier';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_mall_order` ADD COLUMN `shipping_carrier` VARCHAR(64) AFTER `status`', 
+    'SELECT ''Column shipping_carrier already exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'shipping_no';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_mall_order` ADD COLUMN `shipping_no` VARCHAR(64) AFTER `shipping_carrier`', 
+    'SELECT ''Column shipping_no already exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'shipped_time';
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE `im_mall_order` ADD COLUMN `shipped_time` DATETIME AFTER `shipping_no`', 
+    'SELECT ''Column shipped_time already exists'' AS Info');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 -- ALTER TABLE `im_user` MODIFY `latitude` DECIMAL(10, 6) NOT NULL;
 -- ALTER TABLE `im_user` ADD SPATIAL INDEX `idx_location` (POINT(`longitude`, `latitude`));
 

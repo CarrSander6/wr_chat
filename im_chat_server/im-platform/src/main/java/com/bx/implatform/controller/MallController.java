@@ -7,6 +7,7 @@ import com.bx.implatform.service.MallService;
 import com.bx.implatform.vo.OrderVO;
 import com.bx.implatform.vo.ProductVO;
 import io.swagger.v3.oas.annotations.Operation;
+import com.bx.implatform.annotation.RateLimit;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class MallController {
     }
 
     @PostMapping("/order/create")
+    @RateLimit(key = "mall:order:create", limit = 10, windowSeconds = 60)
     @Operation(summary = "创建订单", description = "创建购买订单")
     public Result<OrderVO> createOrder(@Valid @RequestBody CreateOrderDTO dto) {
         return ResultUtils.success(mallService.createOrder(dto));
@@ -74,6 +76,13 @@ public class MallController {
     @Operation(summary = "取消订单", description = "取消未支付的订单")
     public Result<Void> cancelOrder(@PathVariable("id") Long id) {
         mallService.cancelOrder(id);
+        return ResultUtils.success();
+    }
+
+    @PostMapping("/order/confirm/{id}")
+    @Operation(summary = "确认收货", description = "用户确认订单收货，订单完成")
+    public Result<Void> confirmOrder(@PathVariable("id") Long id) {
+        mallService.confirmOrder(id);
         return ResultUtils.success();
     }
 }

@@ -18,6 +18,10 @@ import com.bx.implatform.util.BeanUtils;
 import com.bx.implatform.vo.MatchHistoryVO;
 import com.bx.implatform.vo.MatchedUserVO;
 import com.bx.implatform.vo.UserVO;
+import com.bx.implatform.service.MatchRecommendService;
+import com.bx.imclient.IMClient;
+import com.bx.imcommon.model.IMSystemMessage;
+import com.bx.implatform.vo.SystemMessageVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,45 +43,15 @@ public class MatchServiceImpl extends ServiceImpl<UserMatchRecordMapper, UserMat
     private final UserMatchRecordMapper userMatchRecordMapper;
     private final UserMatchMapper userMatchMapper;
     private final UserMapper userMapper;
+    private final MatchRecommendService recommendService;
+    private final IMClient imClient;
 
     @Override
     public List<UserVO> getMatchCandidates(Integer limit) {
-        UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
-
         if (limit == null || limit <= 0) {
             limit = 10;
         }
-
-        // Get unviewed users
-        List<Long> unviewedUserIds = userMatchRecordMapper.getUnviewedUsers(userId, limit);
-
-        // If not enough unviewed users, get random users
-        if (unviewedUserIds.size() < limit) {
-            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.ne(User::getId, userId)
-                    .eq(User::getStatus, 0)
-                    .eq(User::getIsBanned, false)
-                    .last("ORDER BY RAND() LIMIT " + (limit - unviewedUserIds.size()));
-            
-            List<User> randomUsers = userMapper.selectList(queryWrapper);
-            unviewedUserIds.addAll(randomUsers.stream()
-                    .map(User::getId)
-                    .filter(id -> !unviewedUserIds.contains(id))
-                    .collect(Collectors.toList()));
-        }
-
-        // Get user details
-        List<UserVO> userVOList = new ArrayList<>();
-        for (Long targetUserId : unviewedUserIds) {
-            User user = userMapper.selectById(targetUserId);
-            if (user != null) {
-                UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
-                userVOList.add(userVO);
-            }
-        }
-
-        return userVOList;
+        return recommendService.getSmartRecommendations(limit);
     }
 
     @Override
@@ -137,12 +111,35 @@ public class MatchServiceImpl extends ServiceImpl<UserMatchRecordMapper, UserMat
                     userMatchMapper.insert(match);
                     
                     log.info("Match created between user {} and user {}", userId, targetUserId);
+                    sendMatchSuccessMessage(userId, targetUserId);
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    private void sendMatchSuccessMessage(Long userId, Long targetUserId){
+        User u1 = userMapper.selectById(userId);
+        User u2 = userMapper.selectById(targetUserId);
+        SystemMessageVO msg1 = new SystemMessageVO();
+        msg1.setType(com.bx.implatform.enums.MessageType.TIP_TEXT.code());
+        msg1.setContent("匹配成功，和" + (u2!=null?u2.getNickName():"Ta") + "开始聊天:" + targetUserId);
+        IMSystemMessage<SystemMessageVO> sm1 = new IMSystemMessage<>();
+        sm1.setRecvIds(java.util.List.of(userId));
+        sm1.setData(msg1);
+        sm1.setSendResult(false);
+        imClient.sendSystemMessage(sm1);
+
+        SystemMessageVO msg2 = new SystemMessageVO();
+        msg2.setType(com.bx.implatform.enums.MessageType.TIP_TEXT.code());
+        msg2.setContent("匹配成功，和" + (u1!=null?u1.getNickName():"Ta") + "开始聊天:" + userId);
+        IMSystemMessage<SystemMessageVO> sm2 = new IMSystemMessage<>();
+        sm2.setRecvIds(java.util.List.of(targetUserId));
+        sm2.setData(msg2);
+        sm2.setSendResult(false);
+        imClient.sendSystemMessage(sm2);
     }
 
     @Override

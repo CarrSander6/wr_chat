@@ -60,4 +60,9 @@ public interface MallService {
      * @param orderId 订单ID
      */
     void cancelOrder(Long orderId);
+
+    /**
+     * 用户确认收货，订单完成
+     */
+    void confirmOrder(Long orderId);
 }

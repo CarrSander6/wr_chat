@@ -143,18 +143,50 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
                 .map(UserMatchRecord::getTargetUserId)
                 .collect(Collectors.toList());
         viewedUserIds.add(userId);
-
-        // TODO: 实现基于地理位置的查询
-        // 这里需要在User表中添加经纬度字段，并使用空间索引
-        // 使用 ST_Distance_Sphere 函数计算距离
         
-        // 暂时返回普通推荐
-        return getSmartRecommendations(limit);
+        double latDegree = radius / 111.0;
+        double lonDegree = radius / (111.0 * Math.max(0.1, Math.cos(Math.toRadians(latitude))));
+        double minLat = latitude - latDegree;
+        double maxLat = latitude + latDegree;
+        double minLon = longitude - lonDegree;
+        double maxLon = longitude + lonDegree;
+
+        LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
+        userWrapper.notIn(!viewedUserIds.isEmpty(), User::getId, viewedUserIds)
+                .eq(User::getStatus, 0)
+                .eq(User::getIsBanned, false)
+                .isNotNull(User::getLongitude)
+                .isNotNull(User::getLatitude)
+                .between(User::getLatitude, minLat, maxLat)
+                .between(User::getLongitude, minLon, maxLon)
+                .last("LIMIT " + (limit * 3));
+
+        List<User> candidates = userMapper.selectList(userWrapper);
+
+        Map<Long, Integer> scoreMap = new HashMap<>();
+        User currentUser = userMapper.selectById(userId);
+        for (User candidate : candidates) {
+            int score = calculateMatchScore(currentUser, candidate);
+            scoreMap.put(candidate.getId(), score);
+        }
+
+        List<User> recommendedUsers = candidates.stream()
+                .sorted((u1, u2) -> scoreMap.get(u2.getId()).compareTo(scoreMap.get(u1.getId())))
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        return recommendedUsers.stream()
+                .map(user -> BeanUtils.copyProperties(user, UserVO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Integer calculateMatchScore(Long userId, Long targetUserId) {
-        User user = userMapper.selectById(userId);
+        if (userId == null) {
+            UserSession session = SessionContext.getSession();
+            userId = session != null ? session.getUserId() : null;
+        }
+        User user = userId != null ? userMapper.selectById(userId) : null;
         User targetUser = userMapper.selectById(targetUserId);
         
         if (user == null || targetUser == null) {

@@ -7,6 +7,7 @@ import com.bx.implatform.result.ResultUtils;
 import com.bx.implatform.service.PrivateMessageService;
 import com.bx.implatform.vo.PrivateMessageVO;
 import io.swagger.v3.oas.annotations.Operation;
+import com.bx.implatform.annotation.RateLimit;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ public class PrivateMessageController {
     private final PrivateMessageService privateMessageService;
 
     @PostMapping("/send")
+    @RateLimit(key = "pm:send", limit = 30, windowSeconds = 60)
     @Operation(summary = "发送消息", description = "发送私聊消息")
     public Result<PrivateMessageVO> sendMessage(@Valid @RequestBody PrivateMessageDTO dto) {
         return ResultUtils.success(privateMessageService.sendMessage(dto));

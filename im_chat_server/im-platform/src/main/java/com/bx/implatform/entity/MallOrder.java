@@ -36,6 +36,8 @@ public class MallOrder {
      */
     private Long productId;
 
+    private Long skuId;
+
     /**
      * 商品名称
      */
@@ -70,6 +72,12 @@ public class MallOrder {
      * 订单状态: 0-待支付 1-已支付 2-已取消 3-已完成
      */
     private Integer status;
+
+    private String shippingCarrier;
+
+    private String shippingNo;
+
+    private Date shippedTime;
 
     /**
      * 推荐人用户ID

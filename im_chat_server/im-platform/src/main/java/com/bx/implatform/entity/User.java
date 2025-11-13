@@ -85,6 +85,16 @@ public class User {
      */
     private String signature;
 
+    private String interests;
+
+    private Integer age;
+
+    private String city;
+
+    private java.math.BigDecimal longitude;
+
+    private java.math.BigDecimal latitude;
+
     /**
      * 账号是否被封禁
      */

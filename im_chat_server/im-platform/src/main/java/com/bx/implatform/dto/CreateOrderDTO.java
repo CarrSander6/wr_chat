@@ -15,6 +15,8 @@ public class CreateOrderDTO {
     @NotNull(message = "商品ID不能为空")
     private Long productId;
 
+    private Long skuId;
+
     /**
      * 购买数量
      */

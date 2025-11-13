@@ -8,6 +8,7 @@ import com.bx.implatform.vo.MatchHistoryVO;
 import com.bx.implatform.vo.MatchedUserVO;
 import com.bx.implatform.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
+import com.bx.implatform.annotation.RateLimit;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class MatchController {
     }
 
     @PostMapping("/action")
+    @RateLimit(key = "match:action", limit = 20, windowSeconds = 60)
     @Operation(summary = "记录匹配操作", description = "记录喜欢或不喜欢操作，返回是否匹配成功")
     public Result<Boolean> recordMatchAction(@Valid @RequestBody MatchActionDTO dto) {
         Boolean matched = matchService.recordMatchAction(dto);
