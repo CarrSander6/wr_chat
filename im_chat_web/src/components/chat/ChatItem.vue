@@ -124,13 +124,18 @@ export default {
 	background-color: var(--im-background);
 	white-space: nowrap;
 	cursor: pointer;
+	transition: all 0.2s ease;
+	border-left: 3px solid transparent;
 
 	&:hover {
 		background-color: var(--im-background-active);
+		transform: translateX(2px);
+		border-left-color: #409EFF;
 	}
 
 	&.active {
 		background-color: var(--im-background-active-dark);
+		border-left-color: #409EFF;
 	}
 
 	.chat-left {

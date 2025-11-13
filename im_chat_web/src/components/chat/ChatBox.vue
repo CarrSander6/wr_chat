@@ -729,7 +729,7 @@ export default {
 			}).catch(() => {
 				// 用户取消操作
 			});
-		}
+		},
 		onReceiveRedPackage(redPackageId) {
 			// 调用红包领取API
 			this.$http({

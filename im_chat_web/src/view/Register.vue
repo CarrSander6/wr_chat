@@ -321,7 +321,31 @@ export default {
 				font-weight: 600;
 				letter-spacing: 2px;
 				text-transform: uppercase;
+				color: #409EFF;
+			}
 
+			::v-deep .el-button--primary {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border: none;
+				transition: all 0.3s ease;
+
+				&:hover {
+					transform: translateY(-2px);
+					box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+				}
+
+				&:active {
+					transform: translateY(0);
+				}
+			}
+
+			::v-deep .el-input__inner {
+				transition: all 0.3s ease;
+
+				&:focus {
+					border-color: #667eea;
+					box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+				}
 			}
 		}
 
@@ -332,6 +356,17 @@ export default {
 			line-height: 40px;
 			text-align: left;
 			padding-left: 20px;
+
+			a {
+				color: #409EFF;
+				text-decoration: none;
+				transition: color 0.3s;
+
+				&:hover {
+					color: #66b1ff;
+					text-decoration: underline;
+				}
+			}
 		}
 
 		.other-mode {
@@ -343,6 +378,8 @@ export default {
 				display: flex;
 				padding: 15px 10px;
 				cursor: pointer;
+				transition: all 0.3s ease;
+				border-radius: 8px;
 
 				.icon {
 					color: var(--im-text-color);
@@ -355,7 +392,13 @@ export default {
 					font-size: var(--im-font-size);
 				}
 
+				&:hover {
+					background: rgba(102, 126, 234, 0.1);
+				}
+
 				&.active {
+					background: rgba(102, 126, 234, 0.15);
+					
 					.mode-text {
 						color: var(--im-color-primary);
 					}
