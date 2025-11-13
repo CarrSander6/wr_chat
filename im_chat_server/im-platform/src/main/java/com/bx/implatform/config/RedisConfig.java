@@ -51,10 +51,29 @@ public class RedisConfig extends CachingConfigurerSupport {
 
     @Bean
     public CacheManager cacheManager() {
-        // 设置redis缓存管理器
-        RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(600))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer()));
-        return RedisCacheManager.builder(factory).cacheDefaults(cacheConfiguration).build();
+        // 默认缓存配置 - 10分钟
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(10))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer()))
+            .disableCachingNullValues(); // 不缓存空值
+        
+        // 短期缓存配置 - 5分钟（用户会话等）
+        RedisCacheConfiguration shortConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(5))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer()))
+            .disableCachingNullValues();
+        
+        // 长期缓存配置 - 1小时（配置数据等）
+        RedisCacheConfiguration longConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofHours(1))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer()))
+            .disableCachingNullValues();
+        
+        return RedisCacheManager.builder(factory)
+            .cacheDefaults(defaultConfig)
+            .withCacheConfiguration("shortCache", shortConfig)
+            .withCacheConfiguration("longCache", longConfig)
+            .build();
     }
 
 
