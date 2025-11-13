@@ -104,13 +104,20 @@ export default {
 	align-items: center;
 	white-space: nowrap;
 	cursor: pointer;
+	transition: all 0.2s ease;
+	border-left: 3px solid transparent;
+	border-radius: 4px;
 
 	&:hover {
 		background-color: var(--im-background-active);
+		transform: translateX(2px);
+		border-left-color: #67C23A;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	&.active {
 		background-color: var(--im-background-active-dark);
+		border-left-color: #67C23A;
 	}
 
 	&.small {
