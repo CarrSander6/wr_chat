@@ -5,9 +5,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bx.implatform.entity.AfterSaleRequest;
 import com.bx.implatform.entity.MallOrder;
+import com.bx.implatform.entity.MallProduct;
+import com.bx.implatform.entity.MallSku;
 import com.bx.implatform.exception.GlobalException;
 import com.bx.implatform.mapper.AfterSaleRequestMapper;
 import com.bx.implatform.mapper.MallOrderMapper;
+import com.bx.implatform.mapper.MallProductMapper;
+import com.bx.implatform.mapper.MallSkuMapper;
+import com.bx.implatform.mapper.DistributionCommissionMapper;
+import com.bx.implatform.entity.DistributionCommission;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.bx.implatform.service.AfterSaleService;
 import com.bx.implatform.session.SessionContext;
 import com.bx.implatform.session.UserSession;
@@ -23,6 +30,9 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
 
     private final AfterSaleRequestMapper afterSaleMapper;
     private final MallOrderMapper orderMapper;
+    private final MallProductMapper productMapper;
+    private final MallSkuMapper skuMapper;
+    private final DistributionCommissionMapper commissionMapper;
 
     @Override
     public Long requestReturn(Long orderId, String reason) {
@@ -49,12 +59,40 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
         r.setStatus(1);
         r.setUpdatedTime(new Date());
         afterSaleMapper.updateById(r);
-        // 退款简化为将订单状态改为已取消并不做余额变动，后续可扩展为支付通道退款
         MallOrder order = orderMapper.selectById(r.getOrderId());
         if (order != null) {
             order.setStatus(2);
             order.setUpdatedTime(new Date());
             orderMapper.updateById(order);
+            MallProduct product = productMapper.selectById(order.getProductId());
+            if (order.getSkuId() != null) {
+                MallSku sku = skuMapper.selectById(order.getSkuId());
+                if (sku != null) {
+                    sku.setStock(sku.getStock() + order.getQuantity());
+                    sku.setUpdatedTime(new Date());
+                    skuMapper.updateById(sku);
+                }
+                if (product != null) {
+                    product.setStock(product.getStock() + order.getQuantity());
+                    product.setSalesCount(Math.max(0, product.getSalesCount() - order.getQuantity()));
+                    product.setUpdatedTime(new Date());
+                    productMapper.updateById(product);
+                }
+            } else if (product != null) {
+                product.setStock(product.getStock() + order.getQuantity());
+                product.setSalesCount(Math.max(0, product.getSalesCount() - order.getQuantity()));
+                product.setUpdatedTime(new Date());
+                productMapper.updateById(product);
+            }
+            LambdaQueryWrapper<DistributionCommission> w = new LambdaQueryWrapper<>();
+            w.eq(DistributionCommission::getOrderId, order.getId()).eq(DistributionCommission::getStatus, 0);
+            List<DistributionCommission> cs = commissionMapper.selectList(w);
+            Date now = new Date();
+            for (DistributionCommission c : cs) {
+                c.setStatus(2);
+                c.setSettledTime(null);
+                commissionMapper.updateById(c);
+            }
         }
     }
 

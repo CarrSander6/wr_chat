@@ -11,7 +11,7 @@
  Target Server Version : 80036
  File Encoding         : 65001
 
- Date: 12/11/2025 15:31:09
+ Date: 13/11/2025 22:32:08
 */
 
 SET NAMES utf8mb4;
@@ -202,7 +202,10 @@ CREATE TABLE `im_distribution_commission`  (
   INDEX `idx_distributor_user_id`(`distributor_user_id`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE,
   INDEX `idx_buyer_user_id`(`buyer_user_id`) USING BTREE,
-  INDEX `idx_created_time`(`created_time`) USING BTREE
+  INDEX `idx_created_time`(`created_time`) USING BTREE,
+  INDEX `idx_distributor_status_time`(`distributor_user_id`, `status`, `created_time`) USING BTREE,
+  INDEX `idx_buyer_time`(`buyer_user_id`, `created_time`) USING BTREE,
+  INDEX `idx_order_status`(`order_id`, `status`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '分销佣金记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -232,7 +235,10 @@ CREATE TABLE `im_distribution_user`  (
   UNIQUE INDEX `uk_referral_code`(`referral_code`) USING BTREE,
   INDEX `idx_parent_user_id`(`parent_user_id`) USING BTREE,
   INDEX `idx_grand_parent_user_id`(`grand_parent_user_id`) USING BTREE,
-  INDEX `idx_status`(`status`) USING BTREE
+  INDEX `idx_status`(`status`) USING BTREE,
+  INDEX `idx_parent_status`(`parent_user_id`, `status`) USING BTREE,
+  INDEX `idx_grand_parent_status`(`grand_parent_user_id`, `status`) USING BTREE,
+  INDEX `idx_status_activated`(`status`, `activated_time`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '分销用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -455,7 +461,11 @@ CREATE TABLE `im_mall_order`  (
   INDEX `idx_user_id`(`user_id`) USING BTREE,
   INDEX `idx_product_id`(`product_id`) USING BTREE,
   INDEX `idx_status`(`status`) USING BTREE,
-  INDEX `idx_created_time`(`created_time`) USING BTREE
+  INDEX `idx_created_time`(`created_time`) USING BTREE,
+  INDEX `idx_user_status_time`(`user_id`, `status`, `created_time`) USING BTREE,
+  INDEX `idx_product_status`(`product_id`, `status`) USING BTREE,
+  INDEX `idx_referrer`(`referrer_user_id`, `status`) USING BTREE,
+  INDEX `idx_status_paid`(`status`, `paid_time`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商城订单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -486,7 +496,9 @@ CREATE TABLE `im_mall_product`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_status`(`status`) USING BTREE,
   INDEX `idx_sort_order`(`sort_order`) USING BTREE,
-  INDEX `idx_created_time`(`created_time`) USING BTREE
+  INDEX `idx_created_time`(`created_time`) USING BTREE,
+  INDEX `idx_status_sort`(`status`, `sort_order`) USING BTREE,
+  INDEX `idx_distribution`(`enable_distribution`, `status`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商城商品表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -613,6 +625,7 @@ CREATE TABLE `im_user`  (
   `reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '被封禁原因',
   `type` smallint NULL DEFAULT 1 COMMENT '用户类型 1:普通用户 2:审核账户',
   `signature` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '个性签名',
+  `interests` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '兴趣标签,逗号分隔',
   `is_manual_approve` tinyint(1) NULL DEFAULT 0 COMMENT '是否手动验证好友请求',
   `cid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '客户端id,用于uni-push推送',
   `status` tinyint NULL DEFAULT 0 COMMENT '状态  0:正常  1:已注销',
@@ -628,10 +641,10 @@ CREATE TABLE `im_user`  (
 -- ----------------------------
 -- Records of im_user
 -- ----------------------------
-INSERT INTO `im_user` VALUES (7, 'a111', '17687978523', '', '', '1111111', '$2a$10$KZhcFcePUTGjpFk.7tyoMenQyTSi8BZ59DPLwyno92NCVUk5Win/C', '$2a$10$tneQ8w90RUgJCRw5nClfDeiYYq9HJrB1.H3QTDReIQkALe.ydjjmq', 89.4800, 0, NULL, NULL, 0, '', 3, '', 0, '', 0, '2025-11-11 10:24:31', '2025-08-24 23:35:42');
-INSERT INTO `im_user` VALUES (8, '15605020252', 'a222', '', '', '0x9791558F239057029b2c4D66310829C1F3832A59', '$2a$10$k9k9hatFya/KAJYUVLeudORYObiykV4toyBaMBURsD31wSJmzoaoy', '$2a$10$81Wku.sZwQsshUxP8y3MyOUu4NPYb4Zdx8sdFaLFh/5RCp4l.SUXa', 909.1000, 0, NULL, NULL, 0, '', 3, '', 0, '', 0, '2025-11-10 23:25:33', '2025-11-01 16:53:02');
-INSERT INTO `im_user` VALUES (9, '13011111111', '老六', '', '', '123456', '$2a$10$7ceYNJcRjfbn3HbMbUShNOMzFept8mSO4Jd8InOr7xh7TXzA3amTW', '$2a$10$LbD15OiXa3f2Mm2CnwQE8OabW4RTfawJJSU.B.5NeG1xmfD7ru9Fm', 11110.0000, 0, NULL, NULL, 0, '', 1, '', 0, '', 0, '2025-11-09 14:01:13', '2025-11-09 13:59:16');
-INSERT INTO `im_user` VALUES (10, '15302284628', 'tina', '', '', NULL, '$2a$10$l49mS8WI4Vx46M4hKMHpneoE6W9IJkoEkVWuMP9rhPskJMvus9cdO', NULL, 0.0000, 0, NULL, NULL, 0, '', 1, '', 0, '', 0, '2025-11-10 23:00:46', '2025-11-10 22:59:33');
+INSERT INTO `im_user` VALUES (7, 'a111', '17687978523', '', '', '1111111', '$2a$10$KZhcFcePUTGjpFk.7tyoMenQyTSi8BZ59DPLwyno92NCVUk5Win/C', '$2a$10$tneQ8w90RUgJCRw5nClfDeiYYq9HJrB1.H3QTDReIQkALe.ydjjmq', 89.4800, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-11 10:24:31', '2025-08-24 23:35:42');
+INSERT INTO `im_user` VALUES (8, '15605020252', 'a222', '', '', '0x9791558F239057029b2c4D66310829C1F3832A59', '$2a$10$k9k9hatFya/KAJYUVLeudORYObiykV4toyBaMBURsD31wSJmzoaoy', '$2a$10$81Wku.sZwQsshUxP8y3MyOUu4NPYb4Zdx8sdFaLFh/5RCp4l.SUXa', 909.1000, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-10 23:25:33', '2025-11-01 16:53:02');
+INSERT INTO `im_user` VALUES (9, '13011111111', '老六', '', '', '123456', '$2a$10$7ceYNJcRjfbn3HbMbUShNOMzFept8mSO4Jd8InOr7xh7TXzA3amTW', '$2a$10$LbD15OiXa3f2Mm2CnwQE8OabW4RTfawJJSU.B.5NeG1xmfD7ru9Fm', 11110.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-09 14:01:13', '2025-11-09 13:59:16');
+INSERT INTO `im_user` VALUES (10, '15302284628', 'tina', '', '', NULL, '$2a$10$l49mS8WI4Vx46M4hKMHpneoE6W9IJkoEkVWuMP9rhPskJMvus9cdO', NULL, 0.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-10 23:00:46', '2025-11-10 22:59:33');
 
 -- ----------------------------
 -- Table structure for im_user_blacklist
@@ -736,7 +749,9 @@ CREATE TABLE `im_user_match`  (
   UNIQUE INDEX `uk_user_pair`(`user1_id`, `user2_id`) USING BTREE,
   INDEX `idx_user1_id`(`user1_id`) USING BTREE,
   INDEX `idx_user2_id`(`user2_id`) USING BTREE,
-  INDEX `idx_match_time`(`match_time`) USING BTREE
+  INDEX `idx_match_time`(`match_time`) USING BTREE,
+  INDEX `idx_user1_status`(`user1_id`, `status`) USING BTREE,
+  INDEX `idx_user2_status`(`user2_id`, `status`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户匹配表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -757,7 +772,9 @@ CREATE TABLE `im_user_match_record`  (
   UNIQUE INDEX `uk_user_target`(`user_id`, `target_user_id`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE,
   INDEX `idx_target_user_id`(`target_user_id`) USING BTREE,
-  INDEX `idx_created_time`(`created_time`) USING BTREE
+  INDEX `idx_created_time`(`created_time`) USING BTREE,
+  INDEX `idx_user_action_time`(`user_id`, `action_type`, `created_time`) USING BTREE,
+  INDEX `idx_target_user`(`target_user_id`, `created_time`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户匹配记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
