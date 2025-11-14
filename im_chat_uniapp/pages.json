@@ -123,18 +123,23 @@
 		"navigationBarBackgroundColor": "#f7f7f7",
 		"backgroundColor": "#f7f7f7"
 	},
-	"tabBar": {
+  "tabBar": {
 		"color": "#000000",
 		"selectedColor": "#3e45d7",
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
-		"list": [{
-				"pagePath": "pages/chat/chat",
-				"iconPath": "static/tab/chat.png",
-				"selectedIconPath": "static/tab/chat_active.png",
-				"text": "消息"
+    "list": [{
+            "pagePath": "pages/match/match",
+            "iconPath": "static/tab/logo.png",
+            "selectedIconPath": "static/tab/logo.png",
+            "text": "缘分"
+        },{
+            "pagePath": "pages/chat/chat",
+            "iconPath": "static/tab/chat.png",
+            "selectedIconPath": "static/tab/chat_active.png",
+            "text": "消息"
 
-			},
+          },
 			{
 				"pagePath": "pages/friend/friend",
 				"iconPath": "static/tab/friend.png",

@@ -154,3 +154,10 @@ ALTER TABLE `im_mall_order`
   ADD COLUMN IF NOT EXISTS `completed_time` datetime NULL,
   ADD COLUMN IF NOT EXISTS `created_time` datetime NULL,
   ADD COLUMN IF NOT EXISTS `updated_time` datetime NULL;
+
+-- 用户表字段补齐，确保与实体映射一致
+ALTER TABLE `im_user`
+  ADD COLUMN IF NOT EXISTS `age` int NULL,
+  ADD COLUMN IF NOT EXISTS `city` varchar(255) NULL,
+  ADD COLUMN IF NOT EXISTS `longitude` decimal(10,6) NULL,
+  ADD COLUMN IF NOT EXISTS `latitude` decimal(10,6) NULL;

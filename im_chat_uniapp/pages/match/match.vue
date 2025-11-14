@@ -15,22 +15,27 @@
 		</view>
 
 		<view class="cards-container" v-if="candidates.length > 0">
-			<view 
-				v-for="(user, index) in candidates" 
-				:key="user.id"
-				class="card"
-				:class="{ 'top-card': index === currentIndex }"
-				:style="getCardStyle(index)"
-			>
-				<image :src="user.headImage || '/static/default-avatar.png'" class="user-image" mode="aspectFill"></image>
-				<view class="user-info">
-					<view class="user-name">{{ user.nickName }}</view>
-					<view class="user-signature">{{ user.signature || '这个人很懒，什么都没写~' }}</view>
-					<view class="user-details">
-						<text>{{ user.sex === 0 ? '♂' : '♀' }}</text>
-					</view>
-				</view>
-			</view>
+        <view 
+            v-for="(user, index) in candidates" 
+            :key="user.id"
+            class="card"
+            :class="{ 'top-card': index === currentIndex }"
+            :style="getCardStyle(index)"
+            @touchstart="index === currentIndex && handleTouchStart($event)"
+            @touchmove="index === currentIndex && handleTouchMove($event)"
+            @touchend="index === currentIndex && handleTouchEnd()"
+        >
+            <image :src="user.headImage || '/static/default-avatar.png'" class="user-image" mode="aspectFill"></image>
+            <view class="user-info">
+                <view class="user-name">{{ user.nickName }}</view>
+                <view class="user-signature">{{ user.signature || '这个人很懒，什么都没写~' }}</view>
+                <view class="user-details">
+                    <text>{{ user.sex === 0 ? '♂' : '♀' }}</text>
+                </view>
+            </view>
+            <view v-if="index === currentIndex" class="like-label" :style="{ opacity: likeOpacity }">LIKE</view>
+            <view v-if="index === currentIndex" class="nope-label" :style="{ opacity: nopeOpacity }">NOPE</view>
+        </view>
 		</view>
 
 		<view v-else class="empty-state">
@@ -51,12 +56,18 @@
 
 <script>
 export default {
-	data() {
-		return {
-			candidates: [],
-			currentIndex: 0
-		}
-	},
+    data() {
+        return {
+            candidates: [],
+            currentIndex: 0,
+            startX: 0,
+            startY: 0,
+            dragX: 0,
+            dragY: 0,
+            likeOpacity: 0,
+            nopeOpacity: 0
+        }
+    },
 	onLoad() {
 		this.loadCandidates();
 	},
@@ -75,23 +86,68 @@ export default {
 				});
 			}
 		},
-		getCardStyle(index) {
-			if (index < this.currentIndex) {
-				return { display: 'none' };
-			}
-			const offset = index - this.currentIndex;
-			return {
-				transform: `translateY(${offset * 10}px) scale(${1 - offset * 0.05})`,
-				zIndex: 100 - offset,
-				opacity: 1 - offset * 0.2
-			};
-		},
-		async handleLike() {
-			await this.recordAction(1);
-		},
-		async handleDislike() {
-			await this.recordAction(2);
-		},
+        getCardStyle(index) {
+            if (index < this.currentIndex) {
+                return { display: 'none' };
+            }
+            const offset = index - this.currentIndex;
+            if (index === this.currentIndex) {
+                const rotate = this.dragX * 0.05;
+                return {
+                    transform: `translate(${this.dragX}px, ${this.dragY}px) rotate(${rotate}deg)`,
+                    zIndex: 200,
+                    opacity: 1
+                };
+            }
+            return {
+                transform: `translateY(${offset * 10}px) scale(${1 - offset * 0.05})`,
+                zIndex: 100 - offset,
+                opacity: 1 - offset * 0.2
+            };
+        },
+        handleTouchStart(e) {
+            const touch = e.changedTouches[0] || e.touches[0];
+            this.startX = touch.pageX;
+            this.startY = touch.pageY;
+            this.dragX = 0;
+            this.dragY = 0;
+            this.likeOpacity = 0;
+            this.nopeOpacity = 0;
+        },
+        handleTouchMove(e) {
+            const touch = e.changedTouches[0] || e.touches[0];
+            this.dragX = touch.pageX - this.startX;
+            this.dragY = touch.pageY - this.startY;
+            const ratio = Math.min(Math.abs(this.dragX) / 120, 1);
+            if (this.dragX > 0) {
+                this.likeOpacity = ratio;
+                this.nopeOpacity = 0;
+            } else if (this.dragX < 0) {
+                this.nopeOpacity = ratio;
+                this.likeOpacity = 0;
+            } else {
+                this.likeOpacity = 0;
+                this.nopeOpacity = 0;
+            }
+        },
+        async handleTouchEnd() {
+            const threshold = 100;
+            if (this.dragX > threshold) {
+                await this.recordAction(1);
+            } else if (this.dragX < -threshold) {
+                await this.recordAction(2);
+            }
+            this.dragX = 0;
+            this.dragY = 0;
+            this.likeOpacity = 0;
+            this.nopeOpacity = 0;
+        },
+        async handleLike() {
+            await this.recordAction(1);
+        },
+        async handleDislike() {
+            await this.recordAction(2);
+        },
 		async recordAction(actionType) {
 			if (this.currentIndex >= this.candidates.length) {
 				return;
@@ -143,7 +199,7 @@ export default {
 				url: '/pages/match/match-list'
 			});
 		}
-	}
+        }
 }
 </script>
 
@@ -186,17 +242,17 @@ export default {
 	position: relative;
 	padding: 20rpx;
 	
-	.card {
-		position: absolute;
-		width: 90%;
-		height: 70%;
-		left: 5%;
-		top: 10%;
-		background: #fff;
-		border-radius: 20rpx;
-		overflow: hidden;
-		box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.2);
-		transition: transform 0.3s ease, opacity 0.3s ease;
+    .card {
+        position: absolute;
+        width: 90%;
+        height: 70%;
+        left: 5%;
+        top: 10%;
+        background: #fff;
+        border-radius: 20rpx;
+        overflow: hidden;
+        box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, opacity 0.3s ease;
 		
 		.user-image {
 			width: 100%;
@@ -221,9 +277,35 @@ export default {
 			.user-details {
 				font-size: 32rpx;
 				color: #999;
-			}
-		}
-	}
+        }
+    }
+}
+
+.like-label {
+    position: absolute;
+    top: 30rpx;
+    left: 30rpx;
+    padding: 10rpx 20rpx;
+    border: 4rpx solid #4cd964;
+    color: #4cd964;
+    font-weight: 700;
+    border-radius: 8rpx;
+    transform: rotate(-20deg);
+    background: rgba(255,255,255,0.8);
+}
+
+.nope-label {
+    position: absolute;
+    top: 30rpx;
+    right: 30rpx;
+    padding: 10rpx 20rpx;
+    border: 4rpx solid #ff6b6b;
+    color: #ff6b6b;
+    font-weight: 700;
+    border-radius: 8rpx;
+    transform: rotate(20deg);
+    background: rgba(255,255,255,0.8);
+}
 }
 
 .empty-state {
