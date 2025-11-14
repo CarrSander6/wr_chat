@@ -121,9 +121,9 @@ public class DistributionServiceImpl extends ServiceImpl<DistributionUserMapper,
         vo.setUserId(userId);
         vo.setReferralCode(distributor.getReferralCode());
         vo.setStatus(distributor.getStatus());
-        vo.setTotalCommission(distributor.getTotalCommission());
-        vo.setAvailableCommission(distributor.getAvailableCommission());
-        vo.setWithdrawnCommission(distributor.getWithdrawnCommission());
+        vo.setTotalCommission(distributor.getTotalCommission() != null ? distributor.getTotalCommission() : BigDecimal.ZERO);
+        vo.setAvailableCommission(distributor.getAvailableCommission() != null ? distributor.getAvailableCommission() : BigDecimal.ZERO);
+        vo.setWithdrawnCommission(distributor.getWithdrawnCommission() != null ? distributor.getWithdrawnCommission() : BigDecimal.ZERO);
         vo.setActivatedTime(distributor.getActivatedTime());
 
         // Count referrals
@@ -180,18 +180,22 @@ public class DistributionServiceImpl extends ServiceImpl<DistributionUserMapper,
             throw new GlobalException("您还不是分销商");
         }
 
-        if (dto.getAmount().compareTo(distributor.getAvailableCommission()) > 0) {
+        BigDecimal availableCommission = distributor.getAvailableCommission() != null ? distributor.getAvailableCommission() : BigDecimal.ZERO;
+        if (dto.getAmount().compareTo(availableCommission) > 0) {
             throw new GlobalException("可提现佣金不足");
         }
 
+        BigDecimal withdrawnCommission = distributor.getWithdrawnCommission() != null ? distributor.getWithdrawnCommission() : BigDecimal.ZERO;
+        
         // Update distributor balance
-        distributor.setAvailableCommission(distributor.getAvailableCommission().subtract(dto.getAmount()));
-        distributor.setWithdrawnCommission(distributor.getWithdrawnCommission().add(dto.getAmount()));
+        distributor.setAvailableCommission(availableCommission.subtract(dto.getAmount()));
+        distributor.setWithdrawnCommission(withdrawnCommission.add(dto.getAmount()));
         distributor.setUpdatedTime(new Date());
         distributionUserMapper.updateById(distributor);
 
         // Transfer to user balance
-        user.setBalance(user.getBalance().add(dto.getAmount()));
+        BigDecimal userBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+        user.setBalance(userBalance.add(dto.getAmount()));
         userMapper.updateById(user);
 
         log.info("User {} withdrew commission: {}", userId, dto.getAmount());

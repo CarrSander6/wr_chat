@@ -211,11 +211,12 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         if (order.getPaymentMethod() == 1) {
             // Balance payment
             User user = userMapper.selectById(userId);
-            if (user.getBalance().compareTo(order.getTotalAmount()) < 0) {
+            BigDecimal userBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+            if (userBalance.compareTo(order.getTotalAmount()) < 0) {
                 throw new GlobalException("余额不足");
             }
 
-            user.setBalance(user.getBalance().subtract(order.getTotalAmount()));
+            user.setBalance(userBalance.subtract(order.getTotalAmount()));
             userMapper.updateById(user);
         } else if (order.getPaymentMethod() == 2) {
             // iOS in-app purchase
@@ -401,8 +402,10 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             duWrapper.eq(DistributionUser::getUserId, c.getDistributorUserId());
             DistributionUser distributor = distributionUserMapper.selectOne(duWrapper);
             if (distributor != null) {
-                distributor.setTotalCommission(distributor.getTotalCommission().add(c.getCommissionAmount()));
-                distributor.setAvailableCommission(distributor.getAvailableCommission().add(c.getCommissionAmount()));
+                BigDecimal totalCommission = distributor.getTotalCommission() != null ? distributor.getTotalCommission() : BigDecimal.ZERO;
+                BigDecimal availableCommission = distributor.getAvailableCommission() != null ? distributor.getAvailableCommission() : BigDecimal.ZERO;
+                distributor.setTotalCommission(totalCommission.add(c.getCommissionAmount()));
+                distributor.setAvailableCommission(availableCommission.add(c.getCommissionAmount()));
                 distributor.setUpdatedTime(now);
                 distributionUserMapper.updateById(distributor);
             }
