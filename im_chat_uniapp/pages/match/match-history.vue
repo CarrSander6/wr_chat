@@ -78,15 +78,12 @@ export default {
 			
 			this.loading = true;
 			try {
-				const res = await this.$http.get('/match/history', {
-					params: {
-						actionType: this.activeTab,
-						pageNum: this.pageNum,
-						pageSize: this.pageSize
-					}
+				const res = await this.$http({
+					url: `/match/history?actionType=${this.activeTab}&pageNum=${this.pageNum}&pageSize=${this.pageSize}`,
+					method: 'GET'
 				});
 				
-				const newData = res.data || [];
+				const newData = res || [];
 				this.historyList.push(...newData);
 				
 				if (newData.length < this.pageSize) {

@@ -74,8 +74,11 @@ export default {
 	methods: {
         async loadCandidates() {
             try {
-                const res = await this.$http.get('/match/candidates', { data: { limit: 10 } });
-                this.candidates = Array.isArray(res.data) ? res.data : [];
+                const res = await this.$http({
+                    url: '/match/candidates?limit=10',
+                    method: 'GET'
+                });
+                this.candidates = Array.isArray(res) ? res : [];
             } catch (e) {
                 this.candidates = [];
             } finally {
@@ -87,10 +90,11 @@ export default {
                 const loc = await new Promise((resolve, reject) => {
                     uni.getLocation({ type: 'wgs84', success: resolve, fail: reject })
                 })
-                const res = await this.$http.get('/match/recommend/nearby', {
-                    data: { longitude: loc.longitude, latitude: loc.latitude, radius: 10, limit: 10 }
+                const res = await this.$http({
+                    url: `/match/recommend/nearby?longitude=${loc.longitude}&latitude=${loc.latitude}&radius=10&limit=10`,
+                    method: 'GET'
                 })
-                this.candidates = Array.isArray(res.data) ? res.data : []
+                this.candidates = Array.isArray(res) ? res : []
                 this.currentIndex = 0
             } catch (e) {
                 uni.showToast({ title: '定位或推荐失败', icon: 'none' })
@@ -165,9 +169,13 @@ export default {
 			
 			const currentUser = this.candidates[this.currentIndex];
 			try {
-                const ok = await this.$http.post('/match/action', {
-                    targetUserId: currentUser.id,
-                    actionType: actionType
+                const ok = await this.$http({
+                    url: '/match/action',
+                    method: 'POST',
+                    data: {
+                        targetUserId: currentUser.id,
+                        actionType: actionType
+                    }
                 });
                 
                 if (ok === true) {

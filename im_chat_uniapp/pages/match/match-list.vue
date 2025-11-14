@@ -48,8 +48,11 @@ export default {
 		async loadMatchedUsers() {
 			this.loading = true;
 			try {
-				const res = await this.$http.get('/match/matched');
-				this.matchedList = res.data || [];
+				const res = await this.$http({
+					url: '/match/matched',
+					method: 'GET'
+				});
+				this.matchedList = res || [];
 			} catch (e) {
 				uni.showToast({
 					title: '加载失败',
