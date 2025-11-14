@@ -180,6 +180,19 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
                 .limit(limit)
                 .collect(Collectors.toList());
 
+        if (recommendedUsers.isEmpty()) {
+            LambdaQueryWrapper<User> fallbackWrapper = new LambdaQueryWrapper<>();
+            fallbackWrapper.ne(User::getId, userId)
+                    .eq(User::getStatus, 0)
+                    .eq(User::getIsBanned, false)
+                    .orderByDesc(User::getLastLoginTime)
+                    .last("LIMIT " + limit);
+            List<User> fallback = userMapper.selectList(fallbackWrapper);
+            recommendedUsers = fallback.stream()
+                    .filter(u -> !blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId))
+                    .collect(Collectors.toList());
+        }
+
         return recommendedUsers.stream()
                 .map(user -> BeanUtils.copyProperties(user, UserVO.class))
                 .collect(Collectors.toList());
