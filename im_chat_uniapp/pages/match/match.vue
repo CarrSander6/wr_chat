@@ -345,7 +345,7 @@ export default {
 	justify-content: center;
 	align-items: center;
 	gap: 100rpx;
-	padding: 40rpx;
+	padding: 40rpx 40rpx 120rpx 40rpx;
 	
 	.btn {
 		width: 120rpx;
