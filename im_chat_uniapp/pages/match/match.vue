@@ -74,11 +74,11 @@ export default {
 	methods: {
 		async loadCandidates() {
 			try {
-				const res = await this.$http.get('/match/candidates', {
-					params: { limit: 10 }
-				});
-				this.candidates = res.data || [];
-				this.currentIndex = 0;
+                const list = await this.$http.get('/match/candidates', {
+                    params: { limit: 10 }
+                });
+                this.candidates = Array.isArray(list) ? list : [];
+                this.currentIndex = 0;
 			} catch (e) {
 				uni.showToast({
 					title: '加载失败',
@@ -155,16 +155,16 @@ export default {
 			
 			const currentUser = this.candidates[this.currentIndex];
 			try {
-				const res = await this.$http.post('/match/action', {
-					targetUserId: currentUser.id,
-					actionType: actionType
-				});
-				
-				if (res.data === true) {
-					// 匹配成功
-					uni.showModal({
-						title: '匹配成功',
-						content: '你们互相喜欢，现在可以开始聊天了',
+                const ok = await this.$http.post('/match/action', {
+                    targetUserId: currentUser.id,
+                    actionType: actionType
+                });
+                
+                if (ok === true) {
+                    // 匹配成功
+                    uni.showModal({
+                        title: '匹配成功',
+                        content: '你们互相喜欢，现在可以开始聊天了',
 						confirmText: '开始聊天',
 						success: (modalRes) => {
 							if (modalRes.confirm) {
