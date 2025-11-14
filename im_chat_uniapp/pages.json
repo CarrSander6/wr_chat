@@ -113,7 +113,7 @@
 	}, {
 		"path": "pages/mall/mall"
 	}, {
-		Ï "path": "pages/mall/product-detail"
+		"path": "pages/mall/product-detail"
 	}, {
 		"path": "pages/mall/order-list"
 	}],
