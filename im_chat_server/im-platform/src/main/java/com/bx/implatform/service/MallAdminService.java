@@ -25,4 +25,6 @@ public interface MallAdminService extends IService<MallCategory> {
     List<MallSku> listSkus(Long productId);
 
     void shipOrder(Long orderId, String carrier, String shippingNo);
+
+    java.util.List<com.bx.implatform.entity.AfterSaleRequest> listAfterSales(Integer pageNum, Integer pageSize, Integer status);
 }

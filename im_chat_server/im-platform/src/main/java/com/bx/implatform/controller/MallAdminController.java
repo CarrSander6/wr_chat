@@ -5,6 +5,7 @@ import com.bx.implatform.entity.MallSku;
 import com.bx.implatform.result.Result;
 import com.bx.implatform.result.ResultUtils;
 import com.bx.implatform.service.MallAdminService;
+import com.bx.implatform.service.AfterSaleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ import java.util.List;
 public class MallAdminController {
 
     private final MallAdminService adminService;
+    private final AfterSaleService afterSaleService;
     private final com.bx.implatform.service.AfterSaleService afterSaleService;
 
     @PostMapping("/category/create")
@@ -111,5 +113,13 @@ public class MallAdminController {
                                         @RequestParam(required = false) String reason){
         afterSaleService.reject(id, reason);
         return ResultUtils.success();
+    }
+
+    @GetMapping("/aftersale/list")
+    @Operation(summary = "售后申请列表")
+    public Result<java.util.List<com.bx.implatform.entity.AfterSaleRequest>> listAfterSales(@RequestParam(defaultValue = "1") Integer pageNum,
+                                                                                           @RequestParam(defaultValue = "20") Integer pageSize,
+                                                                                           @RequestParam(required = false) Integer status){
+        return ResultUtils.success(adminService.listAfterSales(pageNum, pageSize, status));
     }
 }

@@ -76,6 +76,36 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/mall',
+    component: Layout,
+    children: [
+      {
+        path: 'category',
+        component: () => import('@/views/mall/category/index.vue'),
+        name: 'MallCategory',
+        meta: { title: '商品分类', icon: 'list' }
+      },
+      {
+        path: 'sku',
+        component: () => import('@/views/mall/sku/index.vue'),
+        name: 'MallSku',
+        meta: { title: 'SKU管理', icon: 'table' }
+      },
+      {
+        path: 'order-ship',
+        component: () => import('@/views/mall/order/ship.vue'),
+        name: 'MallOrderShip',
+        meta: { title: '订单发货', icon: 'edit' }
+      },
+      {
+        path: 'aftersale',
+        component: () => import('@/views/mall/aftersale/index.vue'),
+        name: 'MallAfterSale',
+        meta: { title: '售后审批', icon: 'form' }
+      }
+    ]
+  },
+  {
     path: '/user',
     component: Layout,
     hidden: true,

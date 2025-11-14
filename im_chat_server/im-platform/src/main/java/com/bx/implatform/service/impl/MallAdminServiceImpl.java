@@ -25,6 +25,7 @@ public class MallAdminServiceImpl extends ServiceImpl<MallCategoryMapper, MallCa
     private final MallSkuMapper skuMapper;
     private final MallProductMapper productMapper;
     private final com.bx.implatform.mapper.MallOrderMapper orderMapper;
+    private final com.bx.implatform.mapper.AfterSaleRequestMapper afterSaleRequestMapper;
 
     @Override
     public Long createCategory(String name, Long parentId, Integer sortOrder) {
@@ -136,6 +137,17 @@ public class MallAdminServiceImpl extends ServiceImpl<MallCategoryMapper, MallCa
         order.setShippedTime(new Date());
         order.setUpdatedTime(new Date());
         orderMapper.updateById(order);
+    }
+
+    @Override
+    public java.util.List<com.bx.implatform.entity.AfterSaleRequest> listAfterSales(Integer pageNum, Integer pageSize, Integer status) {
+        pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
+        pageSize = pageSize == null || pageSize <= 0 ? 20 : pageSize;
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.bx.implatform.entity.AfterSaleRequest> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize);
+        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.bx.implatform.entity.AfterSaleRequest> w = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+        if (status != null) w.eq(com.bx.implatform.entity.AfterSaleRequest::getStatus, status);
+        w.orderByDesc(com.bx.implatform.entity.AfterSaleRequest::getCreatedTime);
+        return afterSaleRequestMapper.selectPage(page, w).getRecords();
     }
 
     private int aggregateProductStock(Long productId){

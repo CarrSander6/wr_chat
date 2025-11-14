@@ -2,6 +2,7 @@ package com.bx.implatform.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import lombok.Data;
 
 /**
@@ -29,6 +30,8 @@ public class CreateOrderDTO {
      * 支付方式: 1-余额支付 2-iOS内购
      */
     @NotNull(message = "支付方式不能为空")
+    @Min(value = 1, message = "支付方式不支持")
+    @Max(value = 2, message = "支付方式不支持")
     private Integer paymentMethod;
 
     /**

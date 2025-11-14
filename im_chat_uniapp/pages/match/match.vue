@@ -74,14 +74,26 @@ export default {
 	methods: {
         async loadCandidates() {
             try {
-                const list = await this.$http.get('/match/candidates', {
-                    data: { limit: 10 }
-                });
-                this.candidates = Array.isArray(list) ? list : [];
+                const res = await this.$http.get('/match/candidates', { data: { limit: 10 } });
+                this.candidates = Array.isArray(res.data) ? res.data : [];
             } catch (e) {
                 this.candidates = [];
             } finally {
                 this.currentIndex = 0;
+            }
+        },
+        async loadNearby() {
+            try {
+                const loc = await new Promise((resolve, reject) => {
+                    uni.getLocation({ type: 'wgs84', success: resolve, fail: reject })
+                })
+                const res = await this.$http.get('/match/recommend/nearby', {
+                    data: { longitude: loc.longitude, latitude: loc.latitude, radius: 10, limit: 10 }
+                })
+                this.candidates = Array.isArray(res.data) ? res.data : []
+                this.currentIndex = 0
+            } catch (e) {
+                uni.showToast({ title: '定位或推荐失败', icon: 'none' })
             }
         },
         getCardStyle(index) {
@@ -196,7 +208,7 @@ export default {
 			uni.navigateTo({
 				url: '/pages/match/match-list'
 			});
-		}
+        }
         }
 }
 </script>
