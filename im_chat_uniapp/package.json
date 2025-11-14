@@ -1,11 +1,15 @@
 {
-	"name": "wrim",
-	"uni-app": {
-		"scripts": {
-			"dev": "vite",
-			"build:h5": "vite build"
-		}
-	},
+    "name": "wrim",
+    "scripts": {
+        "dev": "vite",
+        "build:h5": "vite build"
+    },
+    "uni-app": {
+        "scripts": {
+            "dev": "vite",
+            "build:h5": "vite build"
+        }
+    },
 	"dependencies": {
 		"js-base64": "^3.7.7",
 		"pinyin-pro": "^3.23.1",
