@@ -119,45 +119,122 @@ CREATE TABLE IF NOT EXISTS `im_user_blacklist` (
   UNIQUE KEY `uk_black_pair` (`from_user_id`, `to_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE `im_distribution_user` 
-  ADD COLUMN IF NOT EXISTS `activated_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `created_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `updated_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `total_commission` decimal(19,2) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `available_commission` decimal(19,2) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `withdrawn_commission` decimal(19,2) NOT NULL DEFAULT 0;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'activated_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `activated_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE `im_distribution_commission`
-  ADD COLUMN IF NOT EXISTS `status` tinyint NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `created_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `settled_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `order_amount` decimal(19,2) NOT NULL,
-  ADD COLUMN IF NOT EXISTS `commission_rate` decimal(10,4) NOT NULL;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'created_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `created_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE `im_mall_product`
-  ADD COLUMN IF NOT EXISTS `enable_distribution` tinyint NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `level1_commission_rate` decimal(10,4) NOT NULL DEFAULT 0.0000,
-  ADD COLUMN IF NOT EXISTS `level2_commission_rate` decimal(10,4) NOT NULL DEFAULT 0.0000,
-  ADD COLUMN IF NOT EXISTS `sales_count` int NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `sort_order` int NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `created_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `updated_time` datetime NULL;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'updated_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `updated_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE `im_mall_sku`
-  ADD COLUMN IF NOT EXISTS `updated_time` datetime NULL;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'total_commission');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `total_commission` decimal(19,2) NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE `im_mall_order`
-  ADD COLUMN IF NOT EXISTS `sku_id` bigint NULL,
-  ADD COLUMN IF NOT EXISTS `ios_receipt` text,
-  ADD COLUMN IF NOT EXISTS `referrer_user_id` bigint NULL,
-  ADD COLUMN IF NOT EXISTS `paid_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `completed_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `created_time` datetime NULL,
-  ADD COLUMN IF NOT EXISTS `updated_time` datetime NULL;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'available_commission');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `available_commission` decimal(19,2) NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- 用户表字段补齐，确保与实体映射一致
-ALTER TABLE `im_user`
-  ADD COLUMN IF NOT EXISTS `age` int NULL,
-  ADD COLUMN IF NOT EXISTS `city` varchar(255) NULL,
-  ADD COLUMN IF NOT EXISTS `longitude` decimal(10,6) NULL,
-  ADD COLUMN IF NOT EXISTS `latitude` decimal(10,6) NULL;
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_user' AND COLUMN_NAME = 'withdrawn_commission');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_user` ADD COLUMN `withdrawn_commission` decimal(19,2) NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND COLUMN_NAME = 'status');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_commission` ADD COLUMN `status` tinyint NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND COLUMN_NAME = 'created_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_commission` ADD COLUMN `created_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND COLUMN_NAME = 'settled_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_commission` ADD COLUMN `settled_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND COLUMN_NAME = 'order_amount');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_commission` ADD COLUMN `order_amount` decimal(19,2) NOT NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_distribution_commission' AND COLUMN_NAME = 'commission_rate');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_distribution_commission` ADD COLUMN `commission_rate` decimal(10,4) NOT NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'enable_distribution');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `enable_distribution` tinyint NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'level1_commission_rate');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `level1_commission_rate` decimal(10,4) NOT NULL DEFAULT 0.0000', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'level2_commission_rate');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `level2_commission_rate` decimal(10,4) NOT NULL DEFAULT 0.0000', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'sales_count');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `sales_count` int NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'sort_order');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `sort_order` int NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'created_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `created_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_product' AND COLUMN_NAME = 'updated_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_product` ADD COLUMN `updated_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_sku' AND COLUMN_NAME = 'updated_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_sku` ADD COLUMN `updated_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'sku_id');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `sku_id` bigint NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'ios_receipt');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `ios_receipt` text', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'referrer_user_id');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `referrer_user_id` bigint NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'paid_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `paid_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'completed_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `completed_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'created_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `created_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_mall_order' AND COLUMN_NAME = 'updated_time');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_mall_order` ADD COLUMN `updated_time` datetime NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'age');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_user` ADD COLUMN `age` int NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'city');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_user` ADD COLUMN `city` varchar(255) NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'longitude');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_user` ADD COLUMN `longitude` decimal(10,6) NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'im_user' AND COLUMN_NAME = 'latitude');
+SET @sql := IF(@exists = 0, 'ALTER TABLE `im_user` ADD COLUMN `latitude` decimal(10,6) NULL', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
