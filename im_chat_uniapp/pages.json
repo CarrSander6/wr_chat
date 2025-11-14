@@ -8,6 +8,8 @@
 		}
 	},
 	"pages": [{
+		"path": "pages/match/match"
+	}, {
 		"path": "pages/chat/chat"
 	}, {
 		"path": "pages/login/login"
