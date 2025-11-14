@@ -23,7 +23,6 @@ public class MallAdminController {
 
     private final MallAdminService adminService;
     private final AfterSaleService afterSaleService;
-    private final com.bx.implatform.service.AfterSaleService afterSaleService;
 
     @PostMapping("/category/create")
     @Operation(summary = "创建分类")
