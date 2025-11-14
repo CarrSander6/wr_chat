@@ -72,20 +72,18 @@ export default {
 		this.loadCandidates();
 	},
 	methods: {
-		async loadCandidates() {
-			try {
+        async loadCandidates() {
+            try {
                 const list = await this.$http.get('/match/candidates', {
-                    params: { limit: 10 }
+                    data: { limit: 10 }
                 });
                 this.candidates = Array.isArray(list) ? list : [];
+            } catch (e) {
+                this.candidates = [];
+            } finally {
                 this.currentIndex = 0;
-			} catch (e) {
-				uni.showToast({
-					title: '加载失败',
-					icon: 'none'
-				});
-			}
-		},
+            }
+        },
         getCardStyle(index) {
             if (index < this.currentIndex) {
                 return { display: 'none' };
