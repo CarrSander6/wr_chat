@@ -11,7 +11,7 @@
  Target Server Version : 80036
  File Encoding         : 65001
 
- Date: 14/11/2025 15:05:37
+ Date: 14/11/2025 15:15:08
 */
 
 SET NAMES utf8mb4;
@@ -436,6 +436,46 @@ INSERT INTO `im_group_message` VALUES (1331, 21, 8, 'a222', '', '{\"id\":\"redis
 INSERT INTO `im_group_message` VALUES (1332, 21, 8, 'a222', '', '{\"id\":\"redis:red:packet:8:2076414297607141\",\"rob\":false,\"userId\":8}', '', 0, 0, 300, NULL, 0, '2025-11-10 23:24:59');
 
 -- ----------------------------
+-- Table structure for im_mall_aftersale
+-- ----------------------------
+DROP TABLE IF EXISTS `im_mall_aftersale`;
+CREATE TABLE `im_mall_aftersale`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `order_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `reason` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `status` tinyint NOT NULL DEFAULT 0,
+  `created_time` datetime NULL DEFAULT NULL,
+  `updated_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_user_status_time`(`user_id`, `status`, `created_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of im_mall_aftersale
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for im_mall_category
+-- ----------------------------
+DROP TABLE IF EXISTS `im_mall_category`;
+CREATE TABLE `im_mall_category`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint NULL DEFAULT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `status` tinyint NOT NULL DEFAULT 1,
+  `sort_order` int NOT NULL DEFAULT 0,
+  `created_time` datetime NULL DEFAULT NULL,
+  `updated_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_parent_status`(`parent_id`, `status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of im_mall_category
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for im_mall_order
 -- ----------------------------
 DROP TABLE IF EXISTS `im_mall_order`;
@@ -451,6 +491,9 @@ CREATE TABLE `im_mall_order`  (
   `payment_method` tinyint NOT NULL COMMENT '支付方式: 1-余额支付 2-iOS内购',
   `ios_receipt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT 'iOS交易凭证',
   `status` tinyint NOT NULL DEFAULT 0 COMMENT '订单状态: 0-待支付 1-已支付 2-已取消 3-已完成',
+  `shipping_carrier` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `shipping_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `shipped_time` datetime NULL DEFAULT NULL,
   `referrer_user_id` bigint NULL DEFAULT NULL COMMENT '推荐人用户ID',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `paid_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
@@ -517,6 +560,7 @@ DROP TABLE IF EXISTS `im_mall_sku`;
 CREATE TABLE `im_mall_sku`  (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `product_id` bigint NOT NULL,
+  `sku_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `attributes` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `price` decimal(19, 2) NOT NULL,
   `stock` int NOT NULL DEFAULT 0,
@@ -524,7 +568,8 @@ CREATE TABLE `im_mall_sku`  (
   `created_time` datetime NULL DEFAULT NULL,
   `updated_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_product`(`product_id`) USING BTREE
+  INDEX `idx_product`(`product_id`) USING BTREE,
+  UNIQUE INDEX `uk_product_sku_code`(`product_id`, `sku_code`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -1440,6 +1485,21 @@ INSERT INTO `sys_menu` VALUES (1960544573268082692, '用户提现记录新增', 
 INSERT INTO `sys_menu` VALUES (1960544573268082693, '用户提现记录修改', 1960544573268082690, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'im:userWithdrawal:edit', '#', 103, 1, '2025-08-27 11:28:28', NULL, NULL, '');
 INSERT INTO `sys_menu` VALUES (1960544573268082694, '用户提现记录删除', 1960544573268082690, 4, '#', '', NULL, 1, 0, 'F', '0', '0', 'im:userWithdrawal:remove', '#', 103, 1, '2025-08-27 11:28:29', NULL, NULL, '');
 INSERT INTO `sys_menu` VALUES (1960544573268082695, '用户提现记录导出', 1960544573268082690, 5, '#', '', NULL, 1, 0, 'F', '0', '0', 'im:userWithdrawal:export', '#', 103, 1, '2025-08-27 11:28:29', NULL, NULL, '');
+INSERT INTO `sys_menu` VALUES (1960544573268082696, '商城管理', 0, 150, 'mall', NULL, '', 1, 0, 'M', '0', '0', '', 'shopping-cart', 1, 1, '2025-11-14 15:09:18', NULL, NULL, '商城管理目录');
+INSERT INTO `sys_menu` VALUES (1960544573268082697, '商品分类', 1960544573268082696, 1, 'mall/category', 'mall/category/index', '', 1, 0, 'C', '0', '0', 'mall:category:list', 'list', 1, 1, '2025-11-14 15:09:18', NULL, NULL, '商品分类管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082698, 'SKU管理', 1960544573268082696, 2, 'mall/sku', 'mall/sku/index', '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'table', 1, 1, '2025-11-14 15:09:18', NULL, NULL, 'SKU管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082699, '订单发货', 1960544573268082696, 3, 'mall/order-ship', 'mall/order/ship', '', 1, 0, 'C', '0', '0', 'mall:order:ship', 'edit', 1, 1, '2025-11-14 15:09:18', NULL, NULL, '订单发货');
+INSERT INTO `sys_menu` VALUES (1960544573268082700, '售后审批', 1960544573268082696, 4, 'mall/aftersale', 'mall/aftersale/index', '', 1, 0, 'C', '0', '0', 'mall:aftersale:list', 'form', 1, 1, '2025-11-14 15:09:18', NULL, NULL, '售后审批');
+INSERT INTO `sys_menu` VALUES (1960544573268082701, '商城管理', 0, 150, 'mall', NULL, '', 1, 0, 'M', '0', '0', '', 'shopping-cart', 1, 1, '2025-11-14 15:12:00', NULL, NULL, '商城管理目录');
+INSERT INTO `sys_menu` VALUES (1960544573268082702, '商品分类', 1960544573268082696, 1, 'mall/category', 'mall/category/index', '', 1, 0, 'C', '0', '0', 'mall:category:list', 'list', 1, 1, '2025-11-14 15:12:00', NULL, NULL, '商品分类管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082703, 'SKU管理', 1960544573268082696, 2, 'mall/sku', 'mall/sku/index', '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'table', 1, 1, '2025-11-14 15:12:00', NULL, NULL, 'SKU管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082704, '订单发货', 1960544573268082696, 3, 'mall/order-ship', 'mall/order/ship', '', 1, 0, 'C', '0', '0', 'mall:order:ship', 'edit', 1, 1, '2025-11-14 15:12:00', NULL, NULL, '订单发货');
+INSERT INTO `sys_menu` VALUES (1960544573268082705, '售后审批', 1960544573268082696, 4, 'mall/aftersale', 'mall/aftersale/index', '', 1, 0, 'C', '0', '0', 'mall:aftersale:list', 'form', 1, 1, '2025-11-14 15:12:00', NULL, NULL, '售后审批');
+INSERT INTO `sys_menu` VALUES (1960544573268082706, '商城管理', 0, 150, 'mall', NULL, '', 1, 0, 'M', '0', '0', '', 'shopping-cart', 1, 1, '2025-11-14 15:14:38', NULL, NULL, '商城管理目录');
+INSERT INTO `sys_menu` VALUES (1960544573268082707, '商品分类', 1960544573268082696, 1, 'mall/category', 'mall/category/index', '', 1, 0, 'C', '0', '0', 'mall:category:list', 'list', 1, 1, '2025-11-14 15:14:38', NULL, NULL, '商品分类管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082708, 'SKU管理', 1960544573268082696, 2, 'mall/sku', 'mall/sku/index', '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'table', 1, 1, '2025-11-14 15:14:38', NULL, NULL, 'SKU管理');
+INSERT INTO `sys_menu` VALUES (1960544573268082709, '订单发货', 1960544573268082696, 3, 'mall/order-ship', 'mall/order/ship', '', 1, 0, 'C', '0', '0', 'mall:order:ship', 'edit', 1, 1, '2025-11-14 15:14:38', NULL, NULL, '订单发货');
+INSERT INTO `sys_menu` VALUES (1960544573268082710, '售后审批', 1960544573268082696, 4, 'mall/aftersale', 'mall/aftersale/index', '', 1, 0, 'C', '0', '0', 'mall:aftersale:list', 'form', 1, 1, '2025-11-14 15:14:38', NULL, NULL, '售后审批');
 
 -- ----------------------------
 -- Table structure for sys_notice
