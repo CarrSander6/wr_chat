@@ -68,19 +68,24 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
             if (order.getSkuId() != null) {
                 MallSku sku = skuMapper.selectById(order.getSkuId());
                 if (sku != null) {
-                    sku.setStock(sku.getStock() + order.getQuantity());
+                    Integer skuStock = sku.getStock() != null ? sku.getStock() : 0;
+                    sku.setStock(skuStock + order.getQuantity());
                     sku.setUpdatedTime(new Date());
                     skuMapper.updateById(sku);
                 }
                 if (product != null) {
-                    product.setStock(product.getStock() + order.getQuantity());
-                    product.setSalesCount(Math.max(0, product.getSalesCount() - order.getQuantity()));
+                    Integer productStock = product.getStock() != null ? product.getStock() : 0;
+                    Integer productSales = product.getSalesCount() != null ? product.getSalesCount() : 0;
+                    product.setStock(productStock + order.getQuantity());
+                    product.setSalesCount(Math.max(0, productSales - order.getQuantity()));
                     product.setUpdatedTime(new Date());
                     productMapper.updateById(product);
                 }
             } else if (product != null) {
-                product.setStock(product.getStock() + order.getQuantity());
-                product.setSalesCount(Math.max(0, product.getSalesCount() - order.getQuantity()));
+                Integer productStock = product.getStock() != null ? product.getStock() : 0;
+                Integer productSales = product.getSalesCount() != null ? product.getSalesCount() : 0;
+                product.setStock(productStock + order.getQuantity());
+                product.setSalesCount(Math.max(0, productSales - order.getQuantity()));
                 product.setUpdatedTime(new Date());
                 productMapper.updateById(product);
             }

@@ -100,17 +100,20 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             if (sku == null || !sku.getProductId().equals(product.getId()) || sku.getStatus() != 1) {
                 throw new GlobalException("SKU不存在或不可用");
             }
-            if (sku.getStock() < dto.getQuantity()) {
+            Integer skuStock = sku.getStock() != null ? sku.getStock() : 0;
+            if (skuStock < dto.getQuantity()) {
                 throw new GlobalException("库存不足");
             }
         } else {
-            if (product.getStock() < dto.getQuantity()) {
+            Integer productStock = product.getStock() != null ? product.getStock() : 0;
+            if (productStock < dto.getQuantity()) {
                 throw new GlobalException("库存不足");
             }
         }
 
         // Calculate total amount
-        BigDecimal unitPrice = (sku != null && sku.getPrice() != null) ? sku.getPrice() : product.getPrice();
+        BigDecimal unitPrice = (sku != null && sku.getPrice() != null) ? sku.getPrice() : 
+                               (product.getPrice() != null ? product.getPrice() : BigDecimal.ZERO);
         BigDecimal totalAmount = unitPrice.multiply(new BigDecimal(dto.getQuantity()));
 
         // Create order
@@ -211,11 +214,12 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         if (order.getPaymentMethod() == 1) {
             // Balance payment
             User user = userMapper.selectById(userId);
-            if (user.getBalance().compareTo(order.getTotalAmount()) < 0) {
+            BigDecimal userBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+            if (userBalance.compareTo(order.getTotalAmount()) < 0) {
                 throw new GlobalException("余额不足");
             }
 
-            user.setBalance(user.getBalance().subtract(order.getTotalAmount()));
+            user.setBalance(userBalance.subtract(order.getTotalAmount()));
             userMapper.updateById(user);
         } else if (order.getPaymentMethod() == 2) {
             // iOS in-app purchase
@@ -243,19 +247,24 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         if (order.getSkuId() != null) {
             MallSku skuPay = skuMapper.selectById(order.getSkuId());
             if (skuPay != null) {
-                skuPay.setStock(skuPay.getStock() - order.getQuantity());
+                Integer skuStock = skuPay.getStock() != null ? skuPay.getStock() : 0;
+                skuPay.setStock(skuStock - order.getQuantity());
                 skuPay.setUpdatedTime(new Date());
                 skuMapper.updateById(skuPay);
             }
             if (product != null) {
-                product.setStock(Math.max(0, product.getStock() - order.getQuantity()));
-                product.setSalesCount(product.getSalesCount() + order.getQuantity());
+                Integer productStock = product.getStock() != null ? product.getStock() : 0;
+                Integer productSales = product.getSalesCount() != null ? product.getSalesCount() : 0;
+                product.setStock(Math.max(0, productStock - order.getQuantity()));
+                product.setSalesCount(productSales + order.getQuantity());
                 product.setUpdatedTime(new Date());
                 productMapper.updateById(product);
             }
         } else if (product != null) {
-            product.setStock(product.getStock() - order.getQuantity());
-            product.setSalesCount(product.getSalesCount() + order.getQuantity());
+            Integer productStock = product.getStock() != null ? product.getStock() : 0;
+            Integer productSales = product.getSalesCount() != null ? product.getSalesCount() : 0;
+            product.setStock(productStock - order.getQuantity());
+            product.setSalesCount(productSales + order.getQuantity());
             product.setUpdatedTime(new Date());
             productMapper.updateById(product);
         }
@@ -267,7 +276,7 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
         orderMapper.updateById(order);
 
         // Process distribution commission if applicable
-        if (product != null && product.getEnableDistribution()) {
+        if (product != null && Boolean.TRUE.equals(product.getEnableDistribution())) {
             processCommission(order, product);
         }
 
@@ -401,8 +410,10 @@ public class MallServiceImpl extends ServiceImpl<MallOrderMapper, MallOrder> imp
             duWrapper.eq(DistributionUser::getUserId, c.getDistributorUserId());
             DistributionUser distributor = distributionUserMapper.selectOne(duWrapper);
             if (distributor != null) {
-                distributor.setTotalCommission(distributor.getTotalCommission().add(c.getCommissionAmount()));
-                distributor.setAvailableCommission(distributor.getAvailableCommission().add(c.getCommissionAmount()));
+                BigDecimal totalCommission = distributor.getTotalCommission() != null ? distributor.getTotalCommission() : BigDecimal.ZERO;
+                BigDecimal availableCommission = distributor.getAvailableCommission() != null ? distributor.getAvailableCommission() : BigDecimal.ZERO;
+                distributor.setTotalCommission(totalCommission.add(c.getCommissionAmount()));
+                distributor.setAvailableCommission(availableCommission.add(c.getCommissionAmount()));
                 distributor.setUpdatedTime(now);
                 distributionUserMapper.updateById(distributor);
             }

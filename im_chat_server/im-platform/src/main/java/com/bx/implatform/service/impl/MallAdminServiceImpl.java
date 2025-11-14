@@ -153,6 +153,8 @@ public class MallAdminServiceImpl extends ServiceImpl<MallCategoryMapper, MallCa
     private int aggregateProductStock(Long productId){
         LambdaQueryWrapper<MallSku> w = new LambdaQueryWrapper<>();
         w.eq(MallSku::getProductId, productId).eq(MallSku::getStatus, 1);
-        return skuMapper.selectList(w).stream().mapToInt(MallSku::getStock).sum();
+        return skuMapper.selectList(w).stream()
+                .mapToInt(sku -> sku.getStock() != null ? sku.getStock() : 0)
+                .sum();
     }
 }
