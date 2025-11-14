@@ -11,7 +11,7 @@
  Target Server Version : 80036
  File Encoding         : 65001
 
- Date: 13/11/2025 22:32:08
+ Date: 14/11/2025 15:05:37
 */
 
 SET NAMES utf8mb4;
@@ -456,6 +456,7 @@ CREATE TABLE `im_mall_order`  (
   `paid_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
   `completed_time` datetime NULL DEFAULT NULL COMMENT '完成时间',
   `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `sku_id` bigint NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_order_no`(`order_no`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE,
@@ -508,6 +509,27 @@ INSERT INTO `im_mall_product` VALUES (1, 'VIP会员月卡', '开通VIP会员，�
 INSERT INTO `im_mall_product` VALUES (2, 'VIP会员季卡', '开通VIP会员3个月，享受更多特权', NULL, 80.00, 120.00, 9999, 0, 1, 1, 2, 1, 0.1500, 0.0800, '2025-11-12 15:30:46', '2025-11-12 15:30:46');
 INSERT INTO `im_mall_product` VALUES (3, 'VIP会员年卡', '开通VIP会员12个月，享受更多特权', NULL, 288.00, 480.00, 9999, 0, 1, 1, 3, 1, 0.2000, 0.1000, '2025-11-12 15:30:46', '2025-11-12 15:30:46');
 INSERT INTO `im_mall_product` VALUES (4, '钻石礼包', '包含1000钻石，可用于购买虚拟礼物', NULL, 98.00, 98.00, 9999, 0, 1, 1, 4, 0, 0.0000, 0.0000, '2025-11-12 15:30:46', '2025-11-12 15:30:46');
+
+-- ----------------------------
+-- Table structure for im_mall_sku
+-- ----------------------------
+DROP TABLE IF EXISTS `im_mall_sku`;
+CREATE TABLE `im_mall_sku`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `product_id` bigint NOT NULL,
+  `attributes` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `price` decimal(19, 2) NOT NULL,
+  `stock` int NOT NULL DEFAULT 0,
+  `status` tinyint NOT NULL DEFAULT 1,
+  `created_time` datetime NULL DEFAULT NULL,
+  `updated_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_product`(`product_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of im_mall_sku
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for im_private_message
@@ -631,6 +653,10 @@ CREATE TABLE `im_user`  (
   `status` tinyint NULL DEFAULT 0 COMMENT '状态  0:正常  1:已注销',
   `last_login_time` datetime NULL DEFAULT NULL COMMENT '最后登录时间',
   `created_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `age` int NULL DEFAULT NULL,
+  `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `longitude` decimal(10, 6) NULL DEFAULT NULL,
+  `latitude` decimal(10, 6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_user_name`(`user_name`) USING BTREE,
   UNIQUE INDEX `idx_phone`(`phone`) USING BTREE,
@@ -641,10 +667,10 @@ CREATE TABLE `im_user`  (
 -- ----------------------------
 -- Records of im_user
 -- ----------------------------
-INSERT INTO `im_user` VALUES (7, 'a111', '17687978523', '', '', '1111111', '$2a$10$KZhcFcePUTGjpFk.7tyoMenQyTSi8BZ59DPLwyno92NCVUk5Win/C', '$2a$10$tneQ8w90RUgJCRw5nClfDeiYYq9HJrB1.H3QTDReIQkALe.ydjjmq', 89.4800, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-11 10:24:31', '2025-08-24 23:35:42');
-INSERT INTO `im_user` VALUES (8, '15605020252', 'a222', '', '', '0x9791558F239057029b2c4D66310829C1F3832A59', '$2a$10$k9k9hatFya/KAJYUVLeudORYObiykV4toyBaMBURsD31wSJmzoaoy', '$2a$10$81Wku.sZwQsshUxP8y3MyOUu4NPYb4Zdx8sdFaLFh/5RCp4l.SUXa', 909.1000, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-10 23:25:33', '2025-11-01 16:53:02');
-INSERT INTO `im_user` VALUES (9, '13011111111', '老六', '', '', '123456', '$2a$10$7ceYNJcRjfbn3HbMbUShNOMzFept8mSO4Jd8InOr7xh7TXzA3amTW', '$2a$10$LbD15OiXa3f2Mm2CnwQE8OabW4RTfawJJSU.B.5NeG1xmfD7ru9Fm', 11110.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-09 14:01:13', '2025-11-09 13:59:16');
-INSERT INTO `im_user` VALUES (10, '15302284628', 'tina', '', '', NULL, '$2a$10$l49mS8WI4Vx46M4hKMHpneoE6W9IJkoEkVWuMP9rhPskJMvus9cdO', NULL, 0.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-10 23:00:46', '2025-11-10 22:59:33');
+INSERT INTO `im_user` VALUES (7, 'a111', '17687978523', '', '', '1111111', '$2a$10$KZhcFcePUTGjpFk.7tyoMenQyTSi8BZ59DPLwyno92NCVUk5Win/C', '$2a$10$tneQ8w90RUgJCRw5nClfDeiYYq9HJrB1.H3QTDReIQkALe.ydjjmq', 89.4800, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-14 14:52:19', '2025-08-24 23:35:42', NULL, NULL, NULL, NULL);
+INSERT INTO `im_user` VALUES (8, '15605020252', 'a222', '', '', '0x9791558F239057029b2c4D66310829C1F3832A59', '$2a$10$k9k9hatFya/KAJYUVLeudORYObiykV4toyBaMBURsD31wSJmzoaoy', '$2a$10$81Wku.sZwQsshUxP8y3MyOUu4NPYb4Zdx8sdFaLFh/5RCp4l.SUXa', 909.1000, 0, NULL, NULL, 0, '', 3, '', NULL, 0, '', 0, '2025-11-10 23:25:33', '2025-11-01 16:53:02', NULL, NULL, NULL, NULL);
+INSERT INTO `im_user` VALUES (9, '13011111111', '老六', '', '', '123456', '$2a$10$7ceYNJcRjfbn3HbMbUShNOMzFept8mSO4Jd8InOr7xh7TXzA3amTW', '$2a$10$LbD15OiXa3f2Mm2CnwQE8OabW4RTfawJJSU.B.5NeG1xmfD7ru9Fm', 11110.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-09 14:01:13', '2025-11-09 13:59:16', NULL, NULL, NULL, NULL);
+INSERT INTO `im_user` VALUES (10, '15302284628', 'tina', '', '', NULL, '$2a$10$l49mS8WI4Vx46M4hKMHpneoE6W9IJkoEkVWuMP9rhPskJMvus9cdO', NULL, 0.0000, 0, NULL, NULL, 0, '', 1, '', NULL, 0, '', 0, '2025-11-10 23:00:46', '2025-11-10 22:59:33', NULL, NULL, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for im_user_blacklist
