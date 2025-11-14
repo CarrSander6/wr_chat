@@ -39,16 +39,25 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
     @Override
     public List<UserVO> getSmartRecommendations(Integer limit) {
         UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
+        Long userId = (session != null ? session.getUserId() : null);
 
         if (limit == null || limit <= 0) {
             limit = 10;
         }
 
         // 获取当前用户信息
-        User currentUser = userMapper.selectById(userId);
+        User currentUser = (userId != null ? userMapper.selectById(userId) : null);
         if (currentUser == null) {
-            return new ArrayList<>();
+            // 无会话或用户不存在时，返回活跃用户作为兜底
+            LambdaQueryWrapper<User> fallbackWrapper = new LambdaQueryWrapper<>();
+            fallbackWrapper.eq(User::getStatus, 0)
+                    .eq(User::getIsBanned, false)
+                    .orderByDesc(User::getLastLoginTime)
+                    .last("LIMIT " + limit);
+            List<User> fallback = userMapper.selectList(fallbackWrapper);
+            return fallback.stream()
+                    .map(user -> BeanUtils.copyProperties(user, UserVO.class))
+                    .collect(Collectors.toList());
         }
 
         // 获取已浏览过的用户ID列表
@@ -78,10 +87,23 @@ public class MatchRecommendServiceImpl implements MatchRecommendService {
 
         // 按分数降序排序并取top N
         List<User> recommendedUsers = candidates.stream()
-                .filter(u -> !blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId))
+                .filter(u -> userId == null || (!blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId)))
                 .sorted((u1, u2) -> scoreMap.get(u2.getId()).compareTo(scoreMap.get(u1.getId())))
                 .limit(limit)
                 .collect(Collectors.toList());
+
+        if (recommendedUsers.isEmpty()) {
+            LambdaQueryWrapper<User> fallbackWrapper = new LambdaQueryWrapper<>();
+            fallbackWrapper.ne(User::getId, currentUser.getId())
+                    .eq(User::getStatus, 0)
+                    .eq(User::getIsBanned, false)
+                    .orderByDesc(User::getLastLoginTime)
+                    .last("LIMIT " + limit);
+            List<User> fallback = userMapper.selectList(fallbackWrapper);
+            recommendedUsers = fallback.stream()
+                    .filter(u -> userId == null || (!blacklistService.isInBlacklist(userId, u.getId()) && !blacklistService.isInBlacklist(u.getId(), userId)))
+                    .collect(Collectors.toList());
+        }
 
         return recommendedUsers.stream()
                 .map(user -> BeanUtils.copyProperties(user, UserVO.class))
