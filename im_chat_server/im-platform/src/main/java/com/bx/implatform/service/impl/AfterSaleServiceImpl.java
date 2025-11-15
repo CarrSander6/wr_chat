@@ -13,6 +13,7 @@ import com.bx.implatform.mapper.MallOrderMapper;
 import com.bx.implatform.mapper.MallProductMapper;
 import com.bx.implatform.mapper.MallSkuMapper;
 import com.bx.implatform.mapper.DistributionCommissionMapper;
+import com.bx.implatform.mapper.UserMapper;
 import com.bx.implatform.entity.DistributionCommission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.bx.implatform.service.AfterSaleService;
@@ -33,6 +34,7 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
     private final MallProductMapper productMapper;
     private final MallSkuMapper skuMapper;
     private final DistributionCommissionMapper commissionMapper;
+    private final UserMapper userMapper;
 
     @Override
     public Long requestReturn(Long orderId, String reason) {
@@ -61,6 +63,16 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
         afterSaleMapper.updateById(r);
         MallOrder order = orderMapper.selectById(r.getOrderId());
         if (order != null) {
+            // 余额退款
+            if (order.getPaymentMethod() != null && order.getPaymentMethod() == 1 && order.getTotalAmount() != null) {
+                com.bx.implatform.entity.User u = userMapper.selectById(order.getUserId());
+                if (u != null) {
+                    java.math.BigDecimal bal = u.getBalance() == null ? java.math.BigDecimal.ZERO : u.getBalance();
+                    u.setBalance(bal.add(order.getTotalAmount()));
+                    userMapper.updateById(u);
+                }
+            }
+            
             order.setStatus(2);
             order.setUpdatedTime(new Date());
             orderMapper.updateById(order);
@@ -90,9 +102,8 @@ public class AfterSaleServiceImpl extends ServiceImpl<AfterSaleRequestMapper, Af
                 productMapper.updateById(product);
             }
             LambdaQueryWrapper<DistributionCommission> w = new LambdaQueryWrapper<>();
-            w.eq(DistributionCommission::getOrderId, order.getId()).eq(DistributionCommission::getStatus, 0);
+            w.eq(DistributionCommission::getOrderId, order.getId());
             List<DistributionCommission> cs = commissionMapper.selectList(w);
-            Date now = new Date();
             for (DistributionCommission c : cs) {
                 c.setStatus(2);
                 c.setSettledTime(null);

@@ -6,6 +6,7 @@ import com.bx.implatform.result.Result;
 import com.bx.implatform.result.ResultUtils;
 import com.bx.implatform.service.MallAdminService;
 import com.bx.implatform.service.AfterSaleService;
+import com.bx.implatform.mapper.MallOrderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +24,7 @@ public class MallAdminController {
 
     private final MallAdminService adminService;
     private final AfterSaleService afterSaleService;
+    private final MallOrderMapper orderMapper;
 
     @PostMapping("/category/create")
     @Operation(summary = "创建分类")
@@ -116,9 +118,27 @@ public class MallAdminController {
 
     @GetMapping("/aftersale/list")
     @Operation(summary = "售后申请列表")
-    public Result<java.util.List<com.bx.implatform.entity.AfterSaleRequest>> listAfterSales(@RequestParam(defaultValue = "1") Integer pageNum,
-                                                                                           @RequestParam(defaultValue = "20") Integer pageSize,
-                                                                                           @RequestParam(required = false) Integer status){
-        return ResultUtils.success(adminService.listAfterSales(pageNum, pageSize, status));
+    public Result<java.util.List<com.bx.implatform.vo.AfterSaleVO>> listAfterSales(@RequestParam(defaultValue = "1") Integer pageNum,
+                                                                                   @RequestParam(defaultValue = "20") Integer pageSize,
+                                                                                   @RequestParam(required = false) Integer status){
+        java.util.List<com.bx.implatform.entity.AfterSaleRequest> list = adminService.listAfterSales(pageNum, pageSize, status);
+        java.util.List<com.bx.implatform.vo.AfterSaleVO> vos = new java.util.ArrayList<>();
+        for (com.bx.implatform.entity.AfterSaleRequest r : list) {
+            com.bx.implatform.vo.AfterSaleVO vo = new com.bx.implatform.vo.AfterSaleVO();
+            vo.setId(r.getId());
+            vo.setOrderId(r.getOrderId());
+            vo.setUserId(r.getUserId());
+            vo.setReason(r.getReason());
+            vo.setStatus(r.getStatus());
+            vo.setCreatedTime(r.getCreatedTime());
+            vo.setUpdatedTime(r.getUpdatedTime());
+            com.bx.implatform.entity.MallOrder order = orderMapper.selectById(r.getOrderId());
+            if (order != null) {
+                vo.setRefundAmount(order.getTotalAmount());
+                vo.setPaymentMethod(order.getPaymentMethod());
+            }
+            vos.add(vo);
+        }
+        return ResultUtils.success(vos);
     }
 }
